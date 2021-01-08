@@ -38,9 +38,9 @@ stages:
         archiveType: 'zip'
         archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
         replaceExistingArchive: true
+
 - stage: Publish Github Release
-  pool:
-    vmImage: 'ubuntu-latest'
+  
   jobs:
   - deployment: 
     environment: sqltest_prod

@@ -18,14 +18,8 @@ stages:
 
     - task: DotNetCoreCLI@2
       inputs:
-        command: 'restore'
-        projects: '$(solution)'
-
-    - task: DotNetCoreCLI@2
-      inputs:
         command: 'build'
-        projects: '**/*.sln'
-    
+        projects: '**/*.csproj'
         arguments: '--configuration $(buildConfiguration)'
 
     - task: VSTest@2

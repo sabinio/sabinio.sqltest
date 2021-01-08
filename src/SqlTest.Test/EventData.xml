@@ -1,0 +1,310 @@
+﻿<RingBufferTarget truncated="0" processingTime="486" totalEventsProcessed="62281" eventCount="999" droppedCount="0" memoryUsed="818092">
+  <event name="sp_statement_starting" package="sqlserver" timestamp="2021-01-06T06:59:01.021Z">
+    <data name="source_database_id">
+      <type name="uint32" package="package0"></type>
+      <value>1</value>
+    </data>
+    <data name="object_id">
+      <type name="int32" package="package0"></type>
+      <value>1869249714</value>
+    </data>
+    <data name="object_type">
+      <type name="object_type" package="sqlserver"></type>
+      <value>21076</value>
+      <text><![CDATA[TRIGGER]]></text>
+    </data>
+    <data name="state">
+      <type name="statement_starting_state" package="sqlserver"></type>
+      <value>0</value>
+      <text><![CDATA[Normal]]></text>
+    </data>
+    <data name="nest_level">
+      <type name="uint16" package="package0"></type>
+      <value>1</value>
+    </data>
+    <data name="line_number">
+      <type name="int32" package="package0"></type>
+      <value>6</value>
+    </data>
+    <data name="offset">
+      <type name="int32" package="package0"></type>
+      <value>256</value>
+    </data>
+    <data name="offset_end">
+      <type name="int32" package="package0"></type>
+      <value>344</value>
+    </data>
+    <data name="object_name">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[]]></value>
+    </data>
+    <data name="statement">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[IF HAS_DBACCESS('localdev-Test_DLACore_2') =1]]></value>
+    </data>
+    <action name="database_id" package="sqlserver">
+      <type name="uint16" package="package0"></type>
+      <value>1</value>
+    </action>
+    <action name="database_name" package="sqlserver">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[master]]></value>
+    </action>
+    <action name="num_response_rows" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="plan_handle" package="sqlserver">
+      <type name="binary_data" package="package0"></type>
+      <value>05000100b27c6a6f5081e4b28f01000001000000000000000000000000000000000000000000000000000000</value>
+    </action>
+    <action name="query_hash" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="query_plan_hash" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="server_instance_name" package="sqlserver">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[DESKTOP-KGTC7CL]]></value>
+    </action>
+    <action name="session_id" package="sqlserver">
+      <type name="uint16" package="package0"></type>
+      <value>59</value>
+    </action>
+    <action name="attach_activity_id" package="package0">
+      <type name="activity_id" package="package0"></type>
+      <value>18AED596-17F2-45DB-B08B-22CD3489FBF5-5</value>
+    </action>
+  </event>
+
+
+  <event name="sql_batch_starting" package="sqlserver" timestamp="2021-01-06T06:59:01.022Z">
+    <data name="batch_text">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[SET DEADLOCK_PRIORITY -10]]></value>
+    </data>
+    <action name="database_id" package="sqlserver">
+      <type name="uint16" package="package0"></type>
+      <value>1</value>
+    </action>
+    <action name="database_name" package="sqlserver">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[master]]></value>
+    </action>
+    <action name="num_response_rows" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="plan_handle" package="sqlserver">
+      <type name="binary_data" package="package0"></type>
+      <value>0600010072c7b122d06203e58f01000001000000000000000000000000000000000000000000000000000000</value>
+    </action>
+    <action name="query_hash" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="query_plan_hash" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="server_instance_name" package="sqlserver">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[DESKTOP-KGTC7CL]]></value>
+    </action>
+    <action name="session_id" package="sqlserver">
+      <type name="uint16" package="package0"></type>
+      <value>59</value>
+    </action>
+    <action name="sql_text" package="sqlserver">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[SET DEADLOCK_PRIORITY -10]]></value>
+    </action>
+    <action name="attach_activity_id" package="package0">
+      <type name="activity_id" package="package0"></type>
+      <value>18AED596-17F2-45DB-B08B-22CD3489FBF5-6</value>
+    </action>
+  </event>
+  <event name="sql_statement_starting" package="sqlserver" timestamp="2021-01-06T06:59:01.022Z">
+    <data name="state">
+      <type name="statement_starting_state" package="sqlserver"></type>
+      <value>0</value>
+      <text><![CDATA[Normal]]></text>
+    </data>
+    <data name="line_number">
+      <type name="int32" package="package0"></type>
+      <value>1</value>
+    </data>
+    <data name="offset">
+      <type name="int32" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="offset_end">
+      <type name="int32" package="package0"></type>
+      <value>-1</value>
+    </data>
+    <data name="statement">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[SET DEADLOCK_PRIORITY -10]]></value>
+    </data>
+    <action name="context_info" package="sqlserver">
+      <type name="binary_data" package="package0"></type>
+      <value></value>
+    </action>
+    <action name="attach_activity_id" package="package0">
+      <type name="activity_id" package="package0"></type>
+      <value>18AED596-17F2-45DB-B08B-22CD3489FBF5-7</value>
+    </action>
+  </event>
+  <event name="sql_statement_completed" package="sqlserver" timestamp="2021-01-06T06:59:01.022Z">
+    <data name="duration">
+      <type name="int64" package="package0"></type>
+      <value>6</value>
+    </data>
+    <data name="cpu_time">
+      <type name="uint64" package="package0"></type>
+      <value>990</value>
+    </data>
+    <data name="page_server_reads">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="physical_reads">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="logical_reads">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="writes">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="spills">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="row_count">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="last_row_count">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="line_number">
+      <type name="int32" package="package0"></type>
+      <value>1</value>
+    </data>
+    <data name="offset">
+      <type name="int32" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="offset_end">
+      <type name="int32" package="package0"></type>
+      <value>-1</value>
+    </data>
+    <data name="statement">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[SET DEADLOCK_PRIORITY -10]]></value>
+    </data>
+    <data name="parameterized_plan_handle">
+      <type name="binary_data" package="package0"></type>
+      <value></value>
+    </data>
+    <action name="context_info" package="sqlserver">
+      <type name="binary_data" package="package0"></type>
+      <value></value>
+    </action>
+    <action name="plan_handle" package="sqlserver">
+      <type name="binary_data" package="package0"></type>
+      <value>0600010072c7b122d06203e58f01000001000000000000000000000000000000000000000000000000000000</value>
+    </action>
+    <action name="query_hash" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="query_plan_hash" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="attach_activity_id" package="package0">
+      <type name="activity_id" package="package0"></type>
+      <value>18AED596-17F2-45DB-B08B-22CD3489FBF5-8</value>
+    </action>
+  </event>
+  <event name="sql_batch_completed" package="sqlserver" timestamp="2021-01-06T06:59:01.022Z">
+    <data name="cpu_time">
+      <type name="uint64" package="package0"></type>
+      <value>1000</value>
+    </data>
+    <data name="duration">
+      <type name="uint64" package="package0"></type>
+      <value>122</value>
+    </data>
+    <data name="page_server_reads">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="physical_reads">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="logical_reads">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="writes">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="spills">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="row_count">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </data>
+    <data name="result">
+      <type name="rpc_return_result" package="sqlserver"></type>
+      <value>0</value>
+      <text><![CDATA[OK]]></text>
+    </data>
+    <data name="batch_text">
+      <type name="unicode_string" package="package0"></type>
+      <value><![CDATA[SET DEADLOCK_PRIORITY -10]]></value>
+    </data>
+    <action name="cpu_id" package="sqlos">
+      <type name="uint32" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="task_time" package="sqlos">
+      <type name="uint64" package="package0"></type>
+      <value>24107</value>
+    </action>
+    <action name="context_info" package="sqlserver">
+      <type name="binary_data" package="package0"></type>
+      <value></value>
+    </action>
+    <action name="query_hash" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="query_plan_hash" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="transaction_sequence" package="sqlserver">
+      <type name="uint64" package="package0"></type>
+      <value>0</value>
+    </action>
+    <action name="attach_activity_id" package="package0">
+      <type name="activity_id" package="package0"></type>
+      <value>18AED596-17F2-45DB-B08B-22CD3489FBF5-9</value>
+    </action>
+  </event>
+</RingBufferTarget>

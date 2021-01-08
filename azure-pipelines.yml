@@ -1,20 +1,18 @@
 
 trigger:
 - master
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
 
 stages:
-- stage:
+- stage: build
+  pool:
+    vmImage: 'windows-latest'
+
   jobs:
-  - job:
-
-    pool:
-      vmImage: 'windows-latest'
-
-    variables:
-      solution: '**/*.sln'
-      buildPlatform: 'Any CPU'
-      buildConfiguration: 'Release'
-    
+  - job:  
     steps:
     - task: NuGetToolInstaller@1
 
@@ -33,7 +31,16 @@ stages:
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
 
-- stage:
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(Build.BinariesDirectory)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+        replaceExistingArchive: true
+- stage: Publish Github Release
+  pool:
+    vmImage: 'ubuntu-latest'
   jobs:
   - deployment: 
     environment: sqltest_prod

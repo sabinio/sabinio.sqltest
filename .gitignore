@@ -341,3 +341,4 @@ healthchecksdb
 /src/SqlTest.Test/sql_verylarge.xel
 /src/SqlTest.Test/sqlother.xel
 *.xel
+/out

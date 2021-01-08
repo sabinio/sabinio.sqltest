@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sabin.io.xevent", "sabin.io
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XEvent.App.Tests", "XEventConsole.Tests\XEvent.App.Tests.csproj", "{69F5131F-365F-4922-862F-F981C6875239}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XEvent.App.Framework", "XEvent.App.Framework\XEvent.App.Framework.csproj", "{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,10 +39,6 @@ Global
 		{69F5131F-365F-4922-862F-F981C6875239}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69F5131F-365F-4922-862F-F981C6875239}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69F5131F-365F-4922-862F-F981C6875239}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

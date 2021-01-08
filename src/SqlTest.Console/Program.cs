@@ -91,7 +91,7 @@ namespace XEvent.App
             {
                 Console.Error.WriteLine(ex.Message);
                 throw ex;
-                return -1;
+                
             }
         }
     }

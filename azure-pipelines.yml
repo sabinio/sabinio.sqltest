@@ -59,7 +59,7 @@ stages:
               target: '$(Build.SourceVersion)'
               tag: '0.0.1-beta'
               title: 'Beta'
-              assets: '$(Build.ArtifactStagingDirectory)/*.zip'
+              assets: '$(Build.ArtifactStagingDirectory)/**/*.exe'
               assetUploadMode: 'replace'
               isPreRelease: true
               addChangeLog: false

@@ -31,3 +31,17 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
+
+- task: GitHubRelease@1
+  inputs:
+    gitHubConnection: 'GitHub connection 1'
+    repositoryName: '$(Build.Repository.Name)'
+    action: 'edit'
+    target: '$(Build.SourceVersion)'
+    tag: '0.0.1-beta'
+    title: 'Beta'
+    assets: '$(Build.ArtifactStagingDirectory)/*.zip'
+    assetUploadMode: 'replace'
+    isPreRelease: true
+    addChangeLog: false

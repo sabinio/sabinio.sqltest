@@ -57,7 +57,7 @@ namespace SqlTest.Test
 
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            var samplexmlfile = Path.Combine(assemblyPath, "sqlother.xel");
+            var samplexmlfile = Path.Combine(assemblyPath, "sql_large.xel");
 
             XEFileReader eventStream = new XEFileReader(new string[] { "page_faults", "cpu_time", "sql_text", "duration" })
             {

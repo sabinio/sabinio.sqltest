@@ -338,3 +338,5 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/src/SqlTest.Test/sql_verylarge.xel
+/src/SqlTest.Test/sqlother.xel

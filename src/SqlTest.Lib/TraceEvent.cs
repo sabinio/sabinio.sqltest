@@ -55,8 +55,8 @@ namespace SqlTest.Lib
         public Guid attach_activity_guid;
         public int attach_activity_sequence;
 
-#pragma warning restore IDE1006 // Naming Styles
         public string eventName { get; set; }
+#pragma warning restore IDE1006 // Naming Styles
 
         public static IEnumerable<TraceEvent> LoadFromStream(XmlReader eventList, TextWriter Log)
         {

@@ -20,7 +20,7 @@ namespace SqlTest.Lib
         public string XEventSessionName;
 
 
-        public void init()
+        public void Init()
         {
             TestingConnection = new SqlConnection($"{ConnectionStr};Application Name=bob");
 
@@ -76,7 +76,7 @@ namespace SqlTest.Lib
             {
                 if (TestingConnection == null)
                 {
-                    init();
+                    Init();
                     
                 }
                 return TestingConnection;

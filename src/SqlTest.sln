@@ -3,11 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlTest.Console", "SqlTest.Console\SqlTest.Console.csproj", "{E38A82EF-D2F5-49A7-8841-4C57722224B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XEvent.App", "SqlTest.Console\XEvent.App.csproj", "{E38A82EF-D2F5-49A7-8841-4C57722224B3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlTest.Lib", "SqlTest.Lib\SqlTest.Lib.csproj", "{7A14BF89-74E9-4D6E-8B39-A4B328E681B5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlTest.Test", "SqlTest.Test\SqlTest.Test.csproj", "{66BC7A3F-A5E7-4A87-91FB-18F6389D00B2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sabin.io.xevent", "sabin.io.xevent\sabin.io.xevent.csproj", "{D83FE45E-133B-4739-B05D-90AE6DEEEB2E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XEvent.App.Tests", "XEventConsole.Tests\XEvent.App.Tests.csproj", "{69F5131F-365F-4922-862F-F981C6875239}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XEvent.App.Framework", "XEvent.App.Framework\XEvent.App.Framework.csproj", "{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +33,18 @@ Global
 		{66BC7A3F-A5E7-4A87-91FB-18F6389D00B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66BC7A3F-A5E7-4A87-91FB-18F6389D00B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66BC7A3F-A5E7-4A87-91FB-18F6389D00B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D83FE45E-133B-4739-B05D-90AE6DEEEB2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D83FE45E-133B-4739-B05D-90AE6DEEEB2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D83FE45E-133B-4739-B05D-90AE6DEEEB2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D83FE45E-133B-4739-B05D-90AE6DEEEB2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69F5131F-365F-4922-862F-F981C6875239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69F5131F-365F-4922-862F-F981C6875239}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69F5131F-365F-4922-862F-F981C6875239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69F5131F-365F-4922-862F-F981C6875239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D837A3B-A0E3-4116-9254-B6E3B0E19AD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

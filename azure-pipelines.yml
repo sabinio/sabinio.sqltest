@@ -39,8 +39,11 @@ stages:
         archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
         replaceExistingArchive: true
 
-- stage: Publish Github Release
-  
+- stage:
+  displayName: Publish Github Release
+  pool:
+    vmImage: 'windows-latest'
+
   jobs:
   - deployment: 
     environment: sqltest_prod

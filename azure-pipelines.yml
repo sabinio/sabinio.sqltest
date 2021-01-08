@@ -33,7 +33,7 @@ stages:
         command: 'publish'
         publishWebProjects: false
         projects: '**/XEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --out $(Build.ArtifactStagingDirectory)'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
         zipAfterPublish: false
         modifyOutputPath: false
 

@@ -43,7 +43,7 @@ stages:
           steps:    
           - task: GitHubRelease@1
             inputs:
-              gitHubConnection: 'GitHub connection 1'
+              gitHubConnection: 'GitHub.com'
               repositoryName: '$(Build.Repository.Name)'
               action: 'edit'
               target: '$(Build.SourceVersion)'

@@ -31,8 +31,11 @@ stages:
     - task: DotNetCoreCLI@2
       inputs:
         command: 'publish'
+        publishWebProjects: false
         projects: '**/XEvent.App.csproj'
         arguments: '--configuration $(buildConfiguration) --out $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: false
+        modifyOutputPath: false
 
    
 

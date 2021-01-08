@@ -36,7 +36,7 @@ stages:
 - stage:
   jobs:
   - deployment: 
-    environment: sqltest.prod
+    environment: sqltest_prod
     strategy:
       runOnce:
         deploy:   

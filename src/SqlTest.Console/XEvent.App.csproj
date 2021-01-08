@@ -8,7 +8,7 @@
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <IncludeSymbolsInSingleFile>True  </IncludeSymbolsInSingleFile>
+    <IncludeSymbolsInSingleFile>True</IncludeSymbolsInSingleFile>
    <!-- <PublishTrimmed>true</PublishTrimmed>-->
     <PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>

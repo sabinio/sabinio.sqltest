@@ -1,6 +1,6 @@
 
 trigger:
-- main
+- master
 
 stages:
 - stage:

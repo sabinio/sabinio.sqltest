@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SqlTest.Lib\SabinIO.SqlTest.csproj" />
+    <ProjectReference Include="..\SabinIO.SqlTest\SabinIO.SqlTest.csproj" />
   </ItemGroup>
 
 </Project>

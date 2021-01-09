@@ -10,9 +10,9 @@ using System.Xml.Linq;
 using System.IO;
 using System.Xml;
 
-namespace SqlTest.Lib
+namespace SabinIO.SqlTest
 {
-    public class Trace : IDisposable
+    public class TracedConnection : IDisposable
     {
         public string ConnectionStr { get; set;}
         SqlConnection TestingConnection;
@@ -83,10 +83,6 @@ namespace SqlTest.Lib
             }
         }
        
-        public Trace ()
-        {
-          
-        }
 
         public  T Execute<T>(string cmd)
         {

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\sabin.io.xevent\SabinIO.xEvent.Lib.csproj" />
+    <ProjectReference Include="..\SabinIO.xEvent.Lib\SabinIO.xEvent.Lib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

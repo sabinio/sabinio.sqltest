@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/Sabin.Io.SqlTest.Tests/SabinIO.SqlTest.Tests.csproj",
+                "${workspaceFolder}/src/SqlTest.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

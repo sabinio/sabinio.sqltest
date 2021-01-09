@@ -9,7 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Collections.Generic;
 using System.Diagnostics;
-
+using SabinIO.SqlTest;
 
 namespace SabinIO.SqlTest.Tests
 {

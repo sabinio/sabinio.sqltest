@@ -6,10 +6,68 @@ using System.Xml.Linq;
 using System.Linq;
 using System.IO;
 
-namespace SqlTest.Lib
+namespace SabinIO.xEvent.Lib
 {
     public class TraceEvent
     {
+
+        public static IEnumerable<TraceEvent> LoadFromStream(XmlReader eventList, TextWriter Log)
+        {
+            var props = typeof(TraceEvent).GetProperties().ToDictionary(p => p.Name);
+
+
+            XElement eventXml = XElement.Load(eventList);
+
+            foreach (var eventEntry in eventXml.Descendants("event"))
+            {
+                var thisEvent = new TraceEvent() { eventName = eventEntry.Attribute("name").Value };
+
+                foreach (var action in eventEntry.Elements())
+                {
+                    string ActionName = action.Attribute("name").Value;
+                    var actionValue = action.Element("value").Value;
+                    switch (ActionName)
+                    {
+                        case "attach_activity_id":
+
+                            thisEvent.attach_activity_guid = new Guid(actionValue[0..36]);
+                            thisEvent.attach_activity_sequence = int.Parse(actionValue[37..]);
+                            break;
+                        default:
+                            if (props.ContainsKey(ActionName))
+                            {
+
+                                switch (props[ActionName].PropertyType.Name)
+                                {
+                                    case nameof(Int64):
+                                        props[ActionName].SetValue(thisEvent, Int64.Parse(actionValue), null);
+                                        break;
+                                    case nameof(Int32):
+                                        props[ActionName].SetValue(thisEvent, Int32.Parse(actionValue), null);
+                                        break;
+                                    default:
+                                        props[ActionName].SetValue(thisEvent, actionValue, null);
+                                        break;
+
+
+                                }
+
+                            }
+                            else
+                            {
+                                if (Log != null)
+                                {
+                                    Log.WriteLine("public {1} {0} {{get;set;}}", ActionName, action.Element("type").Attribute("name").Value);
+                                }
+                            }
+                            break;
+                    }
+
+                }
+                yield return thisEvent;
+            }
+
+        }
 #pragma warning disable IDE1006 // Naming Styles
         public long cpu_time { get; set; }
         public long database_id { get; set; }
@@ -58,63 +116,6 @@ namespace SqlTest.Lib
         public string eventName { get; set; }
 #pragma warning restore IDE1006 // Naming Styles
 
-        public static IEnumerable<TraceEvent> LoadFromStream(XmlReader eventList, TextWriter Log)
-        {
-            var props = typeof(TraceEvent).GetProperties().ToDictionary(p=>p.Name);
-
-            
-            XElement eventXml = XElement.Load(eventList);
-            
-            foreach (var eventEntry in eventXml.Descendants("event"))
-            {
-                var thisEvent = new TraceEvent() { eventName = eventEntry.Attribute("name").Value };
-                
-                foreach (var action in eventEntry.Elements())
-                {
-                    string ActionName = action.Attribute("name").Value;
-                    var actionValue = action.Element("value").Value;
-                    switch (ActionName)
-                    {
-                        case "attach_activity_id":
-
-                            thisEvent.attach_activity_guid = new Guid(actionValue[0..36]);
-                            thisEvent.attach_activity_sequence = int.Parse(actionValue[37..]);
-                            break;
-                        default:
-                            if (props.ContainsKey(ActionName))
-                            {
-
-                                switch (props[ActionName].PropertyType.Name)
-                                {
-                                    case nameof(Int64):
-                                        props[ActionName].SetValue(thisEvent, Int64.Parse(actionValue), null);
-                                        break;
-                                    case nameof(Int32):
-                                        props[ActionName].SetValue(thisEvent, Int32.Parse(actionValue), null);
-                                        break;
-                                    default:
-                                        props[ActionName].SetValue(thisEvent, actionValue, null);
-                                        break;
-
-
-                                }
-
-                            }
-                            else
-                            {
-                                if (Log != null)
-                                {
-                                    Log.WriteLine("public {1} {0} {{get;set;}}",ActionName,action.Element("type").Attribute("name").Value);
-                                }
-                            }
-                            break;
-                    }
-                        
-                }
-                yield return thisEvent;
-            }
-    
-        }
     }
 
 }

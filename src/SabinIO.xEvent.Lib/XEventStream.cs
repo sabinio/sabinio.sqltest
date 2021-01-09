@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace sabin.io.xevent
+namespace SabinIO.xEvent.Lib
 {
 
     public class XEventStream : IDataReader

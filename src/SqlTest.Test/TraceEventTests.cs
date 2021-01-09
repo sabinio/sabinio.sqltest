@@ -1,26 +1,12 @@
 ﻿using NUnit.Framework;
-using SqlTest.Lib;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Text;
-using System.Xml;
-using System.Linq;
-using NUnit.Framework.Constraints;
-using System.Linq.Expressions;
-using Microsoft.SqlServer.XEvent.XELite;
-using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.Data.SqlClient;
-using System.Data.Common;
 using System.Data;
-using Microsoft.ApplicationInsights;
-using System.Collections;
-using System.Collections.Concurrent;
-using sabin.io.xevent;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Xml;
 
-namespace SqlTest.Test
+namespace SabinIO.xEvent.Lib.Tests
 {
 
     class TraceEventTests

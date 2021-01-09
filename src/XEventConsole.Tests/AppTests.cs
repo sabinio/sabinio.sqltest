@@ -5,10 +5,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using SabinIO.xEvent.App;
 
 namespace XEvent.App.Tests
 {
-    public class Tests
+    public class AppTests
     {
         [SetUp]
         public void Setup()
@@ -25,7 +26,7 @@ namespace XEvent.App.Tests
             using var sw = new StreamWriter(ErrorStream);
             Console.SetError(sw);
 
-            var result = XEvent.App.Program.Main(new string[] {
+            var result = Program.Main(new string[] {
                     "--batchsize","10000",
                     "--tablename","Trace",
                     "--connection", "data source=.;Trusted_Connection=True;initial catalog=test",
@@ -51,17 +52,18 @@ namespace XEvent.App.Tests
                 var samplexmlfile = Path.Combine(assemblyPath, "sql_large.xel");
                 using var ErrorStream = new MemoryStream();
                 using var sw = new StreamWriter(ErrorStream);
-                
-                var result = XEvent.App.Program.Main(new string[] {
+                Console.SetError(sw);
+
+                var result = Program.Main(new string[] {
                     "--batchsize","10000",
                     "--tablename","Foo",
                     "--connection", "data source=.;Trusted_Connection=True;initial catalog=test",
                     "--filename", samplexmlfile,
                     "--fields",string.Join(",",new string[] { "page_faults", "cpu_time", "sql_text", "duration" }) });
 
+                sw.Flush();
                 Console.SetError(new StreamWriter(Console.OpenStandardError()));
 
-                sw.Flush();
                 if (ErrorStream.Position > 0)
                 {
                     ErrorStream.Position = 0;

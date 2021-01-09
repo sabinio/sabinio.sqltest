@@ -1,4 +1,4 @@
-﻿using sabin.io.xevent;
+﻿using SabinIO.xEvent.Lib;
 using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -6,7 +6,7 @@ using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.IO;
 
-namespace XEvent.App
+namespace SabinIO.xEvent.App
 {
     public class Program
     {
@@ -49,6 +49,7 @@ namespace XEvent.App
                 rootCommand.Handler = CommandHandler.Create<int, string, string, string, FileInfo,bool>(
                     async (batchsize, tablename, connection, fields, filename,debug) =>
                  {
+
                      if (debug)
                      {
                          // Set the name of the trace listener, which helps identify this
@@ -74,11 +75,18 @@ namespace XEvent.App
                          connection = connection,
                          tableName = tablename
                      };
+                     try
+                     {
+                         var (rowsread, rowsinserted) = await eventStream.ReadAndLoad();
 
-                     var (rowsread, rowsinserted) = await eventStream.ReadAndLoad();
-
-                     Console.WriteLine($"rows read        {rowsread}");
-                     Console.WriteLine($"rows bulk loaded {rowsinserted}");
+                         Console.WriteLine($"rows read        {rowsread}");
+                         Console.WriteLine($"rows bulk loaded {rowsinserted}");
+                     }
+                     catch (Exception ex)
+                     {
+                         Console.Error.Write(ex.Message);
+                         throw ex;
+                     }
 
                  });
                 // Parse the incoming args and invoke the handler

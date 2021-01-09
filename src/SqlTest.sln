@@ -3,15 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XEvent.App", "SqlTest.Console\XEvent.App.csproj", "{E38A82EF-D2F5-49A7-8841-4C57722224B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.xEvent.App", "SqlTest.Console\SabinIO.xEvent.App.csproj", "{E38A82EF-D2F5-49A7-8841-4C57722224B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlTest.Lib", "SqlTest.Lib\SqlTest.Lib.csproj", "{7A14BF89-74E9-4D6E-8B39-A4B328E681B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.SqlTest", "SqlTest.Lib\SabinIO.SqlTest.csproj", "{7A14BF89-74E9-4D6E-8B39-A4B328E681B5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlTest.Test", "SqlTest.Test\SqlTest.Test.csproj", "{66BC7A3F-A5E7-4A87-91FB-18F6389D00B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.xEvent.Lib.Tests", "SqlTest.Test\SabinIO.xEvent.Lib.Tests.csproj", "{66BC7A3F-A5E7-4A87-91FB-18F6389D00B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sabin.io.xevent", "sabin.io.xevent\sabin.io.xevent.csproj", "{D83FE45E-133B-4739-B05D-90AE6DEEEB2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.xEvent.Lib", "sabin.io.xevent\SabinIO.xEvent.Lib.csproj", "{D83FE45E-133B-4739-B05D-90AE6DEEEB2E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XEvent.App.Tests", "XEventConsole.Tests\XEvent.App.Tests.csproj", "{69F5131F-365F-4922-862F-F981C6875239}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.xEvent.App.Tests", "XEventConsole.Tests\SabinIO.xEvent.App.Tests.csproj", "{69F5131F-365F-4922-862F-F981C6875239}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SabinIO.SqlTest.Tests", "Sabin.Io.SqlTest.Tests\SabinIO.SqlTest.Tests.csproj", "{14DDA275-6104-4742-A9C0-F07C7E2A7260}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{69F5131F-365F-4922-862F-F981C6875239}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69F5131F-365F-4922-862F-F981C6875239}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69F5131F-365F-4922-862F-F981C6875239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14DDA275-6104-4742-A9C0-F07C7E2A7260}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14DDA275-6104-4742-A9C0-F07C7E2A7260}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14DDA275-6104-4742-A9C0-F07C7E2A7260}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14DDA275-6104-4742-A9C0-F07C7E2A7260}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

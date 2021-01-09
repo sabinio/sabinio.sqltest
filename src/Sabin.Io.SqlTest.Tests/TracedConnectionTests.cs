@@ -10,17 +10,18 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace SqlTest.Test
+
+namespace SabinIO.SqlTest.Tests
 {
     [TestFixture]
-        public class Class1
+        public class TracedConnectionTests
     {
  
         [TestCase]
-        public void Runtest()
+        public void CanReadStatementsForSession()
         {
 
-            using var TestConnection = new Lib.Trace() { ConnectionStr = "data source=.;Trusted_Connection=True" };
+            using var TestConnection = new TracedConnection() { ConnectionStr = "data source=.;Trusted_Connection=True" };
             var result = TestConnection.Execute<string>("select 'Simon'");
 
             //            Task.WaitAll( result);
@@ -35,29 +36,31 @@ namespace SqlTest.Test
 
         }
 
-        readonly List<IXEvent> bob = new List<IXEvent>();
         CancellationToken CT;
 
         [TestCase]
-        public void Runtest2()
+        public void LiveStreamCapturesTheEvents()
         {
-            using var T = new Lib.Trace() { ConnectionStr = "data source=.;Trusted_Connection=True" };
+            using var T = new TracedConnection() { ConnectionStr = "data source=.;Trusted_Connection=True" };
             T.Init();
             var samplexml = new XELiveEventStreamer(T.ConnectionStr, T.XEventSessionName);
 
             var tokenSource2 = new CancellationTokenSource();
             CT = tokenSource2.Token;
             //                var Trace = samplexml.ReadEventStream(foo, CT);
+            List<IXEvent> bob = new List<IXEvent>();
+
             var Trace = samplexml.ReadEventStream(
                 evt =>
                 {
+                    TestContext.WriteLine($"Logging Event {evt.Name}");
                     bob.Add(evt);
                     return Task.CompletedTask;
                 }, CT);
             //                var Trace = samplexml.ReadEventStream(x => { return new Task(() => { bob.Add(x); }); }, CT);
 
             var result = T.Execute<string>("select 'Simon'");
-            //            Task.WaitAll( result);
+            
             Assert.That(() => result == "Simon");
             T.Connection.Query("select @@version");
             //T.StopTrace();
@@ -69,7 +72,7 @@ namespace SqlTest.Test
                 Trace.Wait(1000);
             }
             sw.Stop();
-            Assert.That(bob, Has.Count.EqualTo(2));
+            Assert.That(bob, Has.Count.EqualTo(4));
             // Assert.That(() => results.Where(_ => _.name == "sql_statement_completed" && _.actions["sql_text"] == "select 'Simon'").Any());
 
 

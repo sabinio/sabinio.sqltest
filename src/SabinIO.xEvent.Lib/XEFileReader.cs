@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.XEvent.XELite;
 using System;
 using System.Diagnostics;
@@ -13,19 +14,27 @@ namespace SabinIO.xEvent.Lib
         public  string connection;
         public string tableName;
         readonly XEventStream events;
+        private readonly ILogger<XEFileReader> _logger;
 
-        public XEFileReader(string[] fields)
+        public XEFileReader(ILogger<XEFileReader> logger)
         {
-            events = new XEventStream(fields);
+            _logger = logger;
+            events = new XEventStream();
         }
-        public async Task<(int rowsread, int rowsinserted)> ReadAndLoad()
+        public async Task<(int rowsread, int rowsinserted)> ReadAndLoad( string[] fields)
         {
-            var readerTask = ReadAsync();
-            var bulkLoadTask = BulkLoadAsync();
-            await readerTask;
-            await bulkLoadTask;
+            using (_logger.BeginScope("Starting ReadAndLoad"))
+            {
+                events.fields = fields;
+                var readerTask = ReadAsync();
+                _logger.LogInformation("Reader started");
+                var bulkLoadTask = BulkLoadAsync();
+                _logger.LogInformation("BulkLoadAsync started");
+                await readerTask;
+                await bulkLoadTask;
 
-            return (readerTask.Result, bulkLoadTask.Result);
+                return (readerTask.Result, bulkLoadTask.Result);
+            }
         }
 
 
@@ -45,6 +54,7 @@ namespace SabinIO.xEvent.Lib
 
         public async Task<int> BulkLoadAsync()
         {
+            
             try
             {
                 Debug.WriteLine("Starting Bulk Load task");

@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
+using Serilog;
+using System;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -11,13 +14,35 @@ namespace SabinIO.xEvent.Lib.Tests
 
     class TraceEventTests
     {
+        IServiceCollection services;
+        IServiceProvider provider;
+
+        [OneTimeSetUp]
+        public void Setup()
+        {
+            Log.Logger = new LoggerConfiguration()
+                    .Enrich.FromLogContext()
+                    .WriteTo.Console()
+                    .CreateLogger();
+            
+            services = new ServiceCollection()
+                    .AddLogging(loggingBuilder =>
+                    loggingBuilder.AddSerilog(dispose: true))
+                    .AddTransient<XEFileReader>(s => new XEFileReader(s.GetService<Microsoft.Extensions.Logging.ILogger<XEFileReader>>()));
+
+            provider = services.BuildServiceProvider();
+
+        }
+           
+
         [Test]
         public void EnsureXMlisParsed()
         {
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             using var samplexml = XmlReader.Create(Path.Combine(assemblyPath, "EventData.xml"));
-            var X = TraceEvent.LoadFromStream(samplexml, TestContext.Out).ToList();
+            //TODO:Pass log
+            var X = TraceEvent.LoadFromStream(samplexml,null).ToList();
 
             Assert.That(X.Sum(x => x.cpu_time), Is.EqualTo(1990));
             Assert.That(X.Select(y => y.database_name).FirstOrDefault(), Is.EqualTo("master"));
@@ -45,13 +70,14 @@ namespace SabinIO.xEvent.Lib.Tests
 
             var samplexmlfile = Path.Combine(assemblyPath, "sql_large.xel");
 
-            XEFileReader eventStream = new XEFileReader(new string[] { "page_faults", "cpu_time", "sql_text", "duration" })
-            {
-                filename = samplexmlfile,
-                connection = "data source=.;Trusted_Connection=True;initial catalog=test",
-                tableName = "trace"
-            };
-            var (rowsread, rowsinserted) = await eventStream.ReadAndLoad();
+
+            XEFileReader eventStream = provider.GetRequiredService<XEFileReader>();
+            //new XEFileReader( new string[] { "page_faults", "cpu_time", "sql_text", "duration" });
+            eventStream.filename = samplexmlfile;
+            eventStream.connection = "data source=.;Trusted_Connection=True;initial catalog=test";
+            eventStream.tableName = "trace";
+            
+            var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(new string[] { "page_faults", "cpu_time", "sql_text", "duration" });
 
             Assert.That(rowsread, Is.EqualTo(rowsinserted));
             Assert.That(rowsread, Is.Not.EqualTo(0));

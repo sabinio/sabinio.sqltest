@@ -14,16 +14,16 @@ namespace SabinIO.xEvent.Lib
         //        private List<IXEvent> _list;
 
         int readposition = -1;
-        private readonly string[] _fieldList;
+        private string[] _fieldList;
+        public string[] fields { get { return _fieldList; } set { _fieldList = value; } }
+
         public bool finishedLoading = false;
         IXEvent CurrentItem;
         private DateTime lastRead;
 
 
-        public XEventStream(string[] fieldList)
+        public XEventStream()
         {
-            _fieldList = fieldList;
-
             //_list = new List<IXEvent>();
             _Q = new ConcurrentQueue<IXEvent>();
             lastRead = DateTime.Now;

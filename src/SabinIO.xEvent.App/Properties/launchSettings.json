@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SabinIO.xEvent.App": {
+      "commandName": "Project",
+      "commandLineArgs": "--filename ."
+    }
+  }
+}

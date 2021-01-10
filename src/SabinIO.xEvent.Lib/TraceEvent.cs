@@ -5,14 +5,25 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Linq;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace SabinIO.xEvent.Lib
 {
     public class TraceEvent
     {
+        // backing field
+        private readonly ILogger<TraceEvent> _logger;
 
-        public static IEnumerable<TraceEvent> LoadFromStream(XmlReader eventList, TextWriter Log)
+        // constructor
+        public TraceEvent(ILogger<TraceEvent> logger = null)
         {
+            _logger = logger;
+        }
+
+        public static IEnumerable<TraceEvent> LoadFromStream(XmlReader eventList, ILogger log=null)
+        {
+            log?.LogDebug("simon @{message}");
+
             var props = typeof(TraceEvent).GetProperties().ToDictionary(p => p.Name);
 
 
@@ -55,10 +66,8 @@ namespace SabinIO.xEvent.Lib
                             }
                             else
                             {
-                                if (Log != null)
-                                {
-                                    Log.WriteLine("public {1} {0} {{get;set;}}", ActionName, action.Element("type").Attribute("name").Value);
-                                }
+                                log?.LogInformation("public {1} {0} {{get;set;}}", ActionName, action.Element("type").Attribute("name").Value);
+
                             }
                             break;
                     }

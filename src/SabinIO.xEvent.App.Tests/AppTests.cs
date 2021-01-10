@@ -26,7 +26,7 @@ namespace XEvent.App.Tests
             using var sw = new StreamWriter(ErrorStream);
             Console.SetError(sw);
 
-            var result = Program.Main(new string[] {
+            Program.Main(new string[] {
                     "--batchsize","10000",
                     "--tablename","Trace",
                     "--connection", "data source=.;Trusted_Connection=True;initial catalog=test",
@@ -54,7 +54,7 @@ namespace XEvent.App.Tests
                 using var sw = new StreamWriter(ErrorStream);
                 Console.SetError(sw);
 
-                var result = Program.Main(new string[] {
+                Program.Main(new string[] {
                     "--batchsize","10000",
                     "--tablename","Foo",
                     "--connection", "data source=.;Trusted_Connection=True;initial catalog=test",

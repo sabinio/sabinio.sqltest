@@ -19,8 +19,8 @@ stages:
     - task: DotNetCoreCLI@2
       inputs:
         command: 'build'
-        projects: '**/*.csproj'
-        arguments: '--configuration $(buildConfiguration)'
+        projects: '**/*.sln'
+        arguments: '--configuration $(buildConfiguration) /m:4'
 
     - task: VSTest@2
       inputs:
@@ -37,14 +37,26 @@ stages:
         zipAfterPublish: false
         modifyOutputPath: true
 
-   
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: $(Build.ArtifactStagingDirectory)
+        artifactName: XEventApp
 
+- stage: PublishToGitHub
+  jobs: 
   - deployment: PublishGitHubReleaseJob
     environment: sqltest_prod
     strategy:
       runOnce:
         deploy:   
           steps:    
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'xEventApp'
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+
           - task: GitHubRelease@1
             inputs:
               gitHubConnection: 'GitHub.com'

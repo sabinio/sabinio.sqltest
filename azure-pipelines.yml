@@ -41,12 +41,6 @@ stages:
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
         artifactName: XEventApp
-        
-    - task: PublishBuildArtifacts@1
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
 
 - stage: PublishToGitHub
   jobs: 
@@ -56,6 +50,12 @@ stages:
       runOnce:
         deploy:   
           steps:    
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'xEventApp'
+              targetPath: '$(Build.ArtifactStagingDirectory'
           - task: GitHubRelease@1
             inputs:
               gitHubConnection: 'GitHub.com'

@@ -32,10 +32,10 @@ stages:
       inputs:
         command: 'publish'
         publishWebProjects: false
-        projects: '**/XEvent.App.csproj'
+        projects: '**/SabinIO.xEvent.App.csproj'
         arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
         zipAfterPublish: false
-        modifyOutputPath: false
+        modifyOutputPath: true
 
    
 

@@ -55,7 +55,8 @@ stages:
             inputs:
               buildType: 'current'
               artifactName: 'xEventApp'
-              targetPath: '$(Build.ArtifactStagingDirectory'
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+
           - task: GitHubRelease@1
             inputs:
               gitHubConnection: 'GitHub.com'

@@ -20,7 +20,7 @@ stages:
       inputs:
         command: 'build'
         projects: '**/*.csproj'
-        arguments: '--configuration $(buildConfiguration)'
+        arguments: '--configuration $(buildConfiguration) /m:4'
 
     - task: VSTest@2
       inputs:

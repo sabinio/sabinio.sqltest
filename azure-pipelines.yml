@@ -39,12 +39,6 @@ stages:
 
    
 
-- stage: PublishRelease
-  displayName: Publish Github Release
-  pool:
-    vmImage: 'windows-latest'
-
-  jobs:
   - deployment: PublishGitHubReleaseJob
     environment: sqltest_prod
     strategy:

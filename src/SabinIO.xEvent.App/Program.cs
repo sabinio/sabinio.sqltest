@@ -24,10 +24,9 @@ namespace SabinIO.xEvent.App
             try
             {
 
-                    //Needed to capture anything before the full logging is implemented
-                    var config = new LoggerConfiguration().WriteTo.Console(outputTemplate:"Simon {Message}\n");
-               Log.Logger.Information("After LoggerConfiguration");
-
+                //Needed to capture anything before the full logging is implemented
+                var config = new LoggerConfiguration().WriteTo.Console(outputTemplate:"{Message}\n");
+             
                 // Create a root command with some options
                 var rootCommand = new RootCommand()
                 {
@@ -47,8 +46,6 @@ namespace SabinIO.xEvent.App
                 if (p.HasOption("--logFile"))
                 {
                     logFilePath = p.ValueForOption<FileInfo>("--logFile").FullName;
-
-                    config.WriteTo.File(logFilePath,outputTemplate:"before config {Message}\n");
                 }
                 Log.Logger = config.CreateLogger();
                 
@@ -63,13 +60,7 @@ namespace SabinIO.xEvent.App
                                         .ConfigureServices(services =>
                                         services
                                             .AddTransient<XEFileReader>()
-                                            // .AddTransient(Microsoft.Extensions.Logging.ILogger<XEFileReader>, Log.Logger)
-//
                                             .AddOptions<XEventAppOptions>().BindCommandLine()
-                                        ).ConfigureLogging(c =>
-                                        {
-                                        //    ; c.AddSerilog();
-                                        }
                                         ).UseSerilog()
 
                                         )
@@ -80,15 +71,9 @@ namespace SabinIO.xEvent.App
                                     });
 
                 var b = t.Build();
-                Console.WriteLine("after build");
-                Log.Logger.Information("after build");
 
                 Log.CloseAndFlush();
-                //                var foo = CreateHostBuilder(args);
-                //              var host = foo.Build();
-                var foo =   await b.InvokeAsync(args).ConfigureAwait(false);
-                Console.WriteLine("end ");
-                return foo;
+                return  await b.InvokeAsync(args).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -99,47 +84,24 @@ namespace SabinIO.xEvent.App
             finally
             {
                 Log.CloseAndFlush();
-                Console.Out.Flush();
-                Console.Out.Close();
             }
-        }
-
-        private static void ConsoleWriter_WriteLineEvent(object sender, ConsoleWriterEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void ConsoleWriter_WriteEvent(object sender, ConsoleWriterEventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         private static void SetupStaticLogger(ParseResult ThisCmd)
         {
-            /* var configuration = new ConfigurationBuilder()
-                 .AddJsonFile("appsettings.json")
-                 .Build();
-            */
-
+         
             var config = new LoggerConfiguration().Enrich.FromLogContext();
             var logLevel = ThisCmd.CommandResult.GetArgumentValueOrDefault<string>("--logLevel");
 
-            //var logLevel = ThisCmd.ValueForOption<int>("--logLevel");
             if (logLevel !=null)
             {
-                Console.WriteLine("Writing to console----------");
                 config.WriteTo.Console(Enum.Parse<LogEventLevel>(logLevel),outputTemplate:"{message}----");
             }
 
             var logFile = ThisCmd.ValueForOption<FileInfo>("--logFile");
-            //if (logFile != null) config.WriteTo.File(logFile.FullName);
-            Console.WriteLine($"logging to file {logFile}");
+            if (logFile != null) config.WriteTo.File(logFile.FullName);
 
-            Log.Logger.Information("here");
-            
             config.WriteTo.Debug();
-
-
 
             Log.Logger = config.CreateLogger();
            
@@ -162,6 +124,7 @@ namespace SabinIO.xEvent.App
          eventStream.filename = filename.FullName;
          eventStream.connection = connection;
          eventStream.tableName = tablename;
+         eventStream.batchsize = batchsize;
 
          try
          {

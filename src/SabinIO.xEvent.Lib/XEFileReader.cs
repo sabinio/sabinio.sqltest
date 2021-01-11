@@ -13,6 +13,7 @@ namespace SabinIO.xEvent.Lib
         public string filename;
         public  string connection;
         public string tableName;
+        public int batchsize = 100000;
         readonly XEventStream events;
         private readonly ILogger<XEFileReader> _logger;
 
@@ -77,7 +78,8 @@ namespace SabinIO.xEvent.Lib
                 {
                     DestinationTableName = tableName,
                     EnableStreaming = true,
-                    BatchSize = 200000
+                    BatchSize = batchsize,
+                    
                 };
                 Trace.WriteLine("Trace. Starting Task");
                 await bc.WriteToServerAsync(events);

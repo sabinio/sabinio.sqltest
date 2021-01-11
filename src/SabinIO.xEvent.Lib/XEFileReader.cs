@@ -23,15 +23,26 @@ namespace SabinIO.xEvent.Lib
         }
         public async Task<(int rowsread, int rowsinserted)> ReadAndLoad( string[] fields)
         {
+            
             using (_logger.BeginScope("Starting ReadAndLoad"))
             {
                 events.fields = fields;
-                var readerTask = ReadAsync();
-                _logger.LogInformation("Reader started");
-                var bulkLoadTask = BulkLoadAsync();
-                _logger.LogInformation("BulkLoadAsync started");
-                await readerTask;
-                await bulkLoadTask;
+                var readerTask = Task<(int rowsread, int rowsinserted)>.Run(async ()=>
+                {
+                    _logger.LogInformation("Reader started");
+                    _logger.LogInformation("Reader {ProcessorId}-{ThreadId}", Thread.GetCurrentProcessorId(), Thread.CurrentThread.ManagedThreadId);
+                    return await ReadAsync();
+                });
+
+                var bulkLoadTask = Task<int>.Run(async () =>
+                {
+                    _logger.LogInformation("BulkLoadAsync started");
+                    _logger.LogInformation("BulkLoadAsync {ProcessorId}-{ThreadId}", Thread.GetCurrentProcessorId(), Thread.CurrentThread.ManagedThreadId);
+                    return await BulkLoadAsync();
+                });
+
+                await readerTask.ConfigureAwait(false);
+                await bulkLoadTask.ConfigureAwait(false);
 
                 return (readerTask.Result, bulkLoadTask.Result);
             }

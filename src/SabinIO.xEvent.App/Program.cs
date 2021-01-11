@@ -1,14 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SabinIO.xEvent.App;
+using Microsoft.Extensions.Options;
 using SabinIO.xEvent.Lib;
 using Serilog;
+using Serilog.Events;
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Hosting;
 using System.CommandLine.Invocation;
-using System.Diagnostics;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,143 +18,219 @@ namespace SabinIO.xEvent.App
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
-            SetupStaticLogger();
 
             try
             {
 
-                Log.Information("Starting");
-                var foo = CreateHostBuilder(args);
-                var host = foo.Build();
-                host.RunAsync();
+                    //Needed to capture anything before the full logging is implemented
+                    var config = new LoggerConfiguration().WriteTo.Console(outputTemplate:"Simon {Message}\n");
+               Log.Logger.Information("After LoggerConfiguration");
+
+                // Create a root command with some options
+                var rootCommand = new RootCommand()
+                {
+                    Handler = Handler
+                };
+                rootCommand.AddOption(new Option<string>("--tablename", description: "Tablename to load trace into"));
+                rootCommand.AddOption(new Option<string>("--connection", description: "Connection string"));
+                rootCommand.AddOption(new Option<FileInfo>("--filename", description: "Extended event filename"));
+                rootCommand.AddOption(new Option<int>("--batchsize", getDefaultValue: () => 1000000, description: "Size of batches sent to bulk copy"));
+                rootCommand.AddOption(new Option<string>("--fields", description: "names of fields to load from extended events"));
+                rootCommand.AddOption(new Option<string>("--logFile", description: "name of log file"));
+                rootCommand.AddOption(new Option<bool>("--debug", getDefaultValue: () => false, description: "outputs debug information to the standard out"));
+                rootCommand.AddOption(new Option<int>("--logLevel", getDefaultValue: () => -1, description: "outputs debug information to the standard out"));
+
+                var p = rootCommand.Parse(args);
+                var logFilePath = "";
+                if (p.HasOption("--logFile"))
+                {
+                    logFilePath = p.ValueForOption<FileInfo>("--logFile").FullName;
+
+                    config.WriteTo.File(logFilePath,outputTemplate:"before config {Message}\n");
+                }
+                Log.Logger = config.CreateLogger();
+                
+                rootCommand.Description = "Extended event bulk loader ";
+
+                var t = new CommandLineBuilder(rootCommand)
+                                    .UseDefaults()
+                                    .UseMiddleware(i => SetupStaticLogger(i.ParseResult))
+                                    .UseHost(Host.CreateDefaultBuilder,
+                                    host =>
+                                        host
+                                        .ConfigureServices(services =>
+                                        services
+                                            .AddTransient<XEFileReader>()
+                                            // .AddTransient(Microsoft.Extensions.Logging.ILogger<XEFileReader>, Log.Logger)
+//
+                                            .AddOptions<XEventAppOptions>().BindCommandLine()
+                                        ).ConfigureLogging(c =>
+                                        {
+                                        //    ; c.AddSerilog();
+                                        }
+                                        ).UseSerilog()
+
+                                        )
+                                    .UseExceptionHandler((ex, i) =>
+                                    {
+                                        Log.Error(ex.Message);
+                                        Log.Fatal("Bugger");
+                                    });
+
+                var b = t.Build();
+                Console.WriteLine("after build");
+                Log.Logger.Information("after build");
+
+                Log.CloseAndFlush();
+                //                var foo = CreateHostBuilder(args);
+                //              var host = foo.Build();
+                var foo =   await b.InvokeAsync(args).ConfigureAwait(false);
+                Console.WriteLine("end ");
+                return foo;
             }
             catch (Exception ex)
             {
+
                 Log.Fatal(ex, "An unhandled exception occurred.");
+                return -1;
             }
             finally
             {
                 Log.CloseAndFlush();
+                Console.Out.Flush();
+                Console.Out.Close();
             }
         }
 
-        private static void SetupStaticLogger()
+        private static void ConsoleWriter_WriteLineEvent(object sender, ConsoleWriterEventArgs e)
         {
-           /* var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
-           */
-            Log.Logger = new LoggerConfiguration()
-                .CreateLogger();
-            Log.Information("Hello Simon {bobby}", "bobby value");
+            throw new NotImplementedException();
         }
 
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            new HostBuilder()
-                .ConfigureLogging((hostContext, logging) =>
-                {
-                    logging.AddSerilog();
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services
-                        // Setup Dependency Injection container.
-                        .AddTransient<XEFileReader>()
-                        // Specify the class that is the app/service that should be ran.
-                        .AddHostedService<HostedApp>(s=>new HostedApp(args,s.GetService<XEFileReader>(),Log.Logger));
-                    
-                }          
-            );
-    }
+        private static void ConsoleWriter_WriteEvent(object sender, ConsoleWriterEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
-}
-public class HostedApp : IHostedService
-{
+        private static void SetupStaticLogger(ParseResult ThisCmd)
+        {
+            /* var configuration = new ConfigurationBuilder()
+                 .AddJsonFile("appsettings.json")
+                 .Build();
+            */
 
+            var config = new LoggerConfiguration().Enrich.FromLogContext();
+            var logLevel = ThisCmd.CommandResult.GetArgumentValueOrDefault<string>("--logLevel");
 
-    XEFileReader _classThatLogs;
-    ILogger _log;
-
-    string[] _args; 
-
-    public HostedApp(string[] args, XEFileReader classThatLogs, ILogger log)
-    {
-        _classThatLogs = classThatLogs ?? throw new ArgumentNullException(nameof(classThatLogs));
-        _args = args;
-        _log = log;
-    }
-
-    public Task StartAsync( CancellationToken cancellationToken)
-    {
-
-        Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
-            .WriteTo.Debug()
-            .ReadFrom.KeyValuePairs(new List<KeyValuePair<string, string>>())
-            .CreateLogger();
-        Log.Information("Hello Simon {bobby}", "bobby value");
-
-        // Create a root command with some options
-        var rootCommand = new RootCommand();
-        rootCommand.AddOption(new Option<string>("--tablename", description: "Tablename to load trace into"));
-        rootCommand.AddOption(new Option<string>("--connection", description: "Connection string"));
-        rootCommand.AddOption(new Option<FileInfo>("--filename", description: "Extended event filename"));
-        rootCommand.AddOption(new Option<int>("--batchsize", getDefaultValue: () => 1000000, description: "Size of batches sent to bulk copy"));
-        rootCommand.AddOption(new Option<string>("--fields", description: "names of fields to load from extended events"));
-        rootCommand.AddOption(new Option<bool>("--debug", getDefaultValue: () => false, description: "outputs debug information to the standard out"));
-
-        rootCommand.Description = "Extended event bulk loader ";
-        Log.Information("boo");
-        
-
-
-        // Note that the parameters of the handler method are matched according to the names of the options
-        rootCommand.Handler = CommandHandler.Create<int, string, string, string, FileInfo, bool>(
-            async (batchsize, tablename, connection, fields, filename, debug) =>
+            //var logLevel = ThisCmd.ValueForOption<int>("--logLevel");
+            if (logLevel !=null)
             {
-                if (debug)
-                {
-                    ConsoleTraceListener consoleTracer = new ConsoleTraceListener();
-                    Trace.Listeners.Add(consoleTracer);
-                }
-                Log.Information("In handler");
-                Console.WriteLine($"The value for --batchsize is: {batchsize}");
-                Console.WriteLine($"The value for --filename is: {filename?.FullName ?? "null"}");
-                Console.WriteLine($"The value for --connection is: {connection}");
-                Console.WriteLine($"The value for --table is: {tablename}");
-                Console.WriteLine($"The value for --fields is: {fields}");
+                Console.WriteLine("Writing to console----------");
+                config.WriteTo.Console(Enum.Parse<LogEventLevel>(logLevel),outputTemplate:"{message}----");
+            }
+
+            var logFile = ThisCmd.ValueForOption<FileInfo>("--logFile");
+            //if (logFile != null) config.WriteTo.File(logFile.FullName);
+            Console.WriteLine($"logging to file {logFile}");
+
+            Log.Logger.Information("here");
+            
+            config.WriteTo.Debug();
 
 
 
-                XEFileReader eventStream = _classThatLogs;
-                eventStream.filename = filename.FullName;
-                    eventStream.connection = connection;
-                    eventStream.tableName = tablename;
-                
-                try
-                {
-                    var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields?.Split(","));
-
-                    Console.WriteLine($"rows read        {rowsread}");
-                    Console.WriteLine($"rows bulk loaded {rowsinserted}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.Write(ex.Message);
-                    throw ex;
-                }
-
-            });
-        // Parse the incoming args and invoke the handler
+            Log.Logger = config.CreateLogger();
+           
+        }
 
 
-        return rootCommand.InvokeAsync(_args);
+        internal static ICommandHandler Handler { get; } = CommandHandler.Create(
+     async (IConsole console, IHost host, CancellationToken cancelToken) =>
+     {
+         var (batchsize, tablename, connection, fields, filename, debug) = host.Services.GetRequiredService<IOptions<XEventAppOptions>>().Value;
+
+         Console.WriteLine($"The value for --batchsize is: {batchsize}");
+         Console.WriteLine($"The value for --filename is: {filename?.FullName ?? "null"}");
+         Console.WriteLine($"The value for --connection is: {connection}");
+         Console.WriteLine($"The value for --table is: {tablename}");
+         Console.WriteLine($"The value for --fields is: {fields}");
+
+         XEFileReader eventStream = host.Services.GetRequiredService<XEFileReader>();
+         
+         eventStream.filename = filename.FullName;
+         eventStream.connection = connection;
+         eventStream.tableName = tablename;
+
+         try
+         {
+             var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields?.Split(","));
+
+             Console.WriteLine($"rows read        {rowsread}");
+             Console.WriteLine($"rows bulk loaded {rowsinserted}");
+         }
+         catch (Exception ex)
+         {
+             Console.Error.Write(ex.Message);
+
+         }
+     }
+     );
+
     }
-    public Task StopAsync(CancellationToken cancellationToken)
+
+
+    public class XEventAppOptions
     {
-        return Task.CompletedTask;//throw new NotImplementedException();
+
+#pragma warning disable IDE1006 // Naming Styles
+        public int batchsize { get; set; }
+        public string tablename { get; set; }
+        public string connection { get; set; }
+        public string fields { get; set; }
+        public FileInfo filename { get; set; }
+        public bool debug { get; set; }
+
+#pragma warning restore IDE1006 // Naming Styles
+
+        public (int batchsize,  string tablename,  string connection,  string fields,  FileInfo filename,  bool debug) bob()
+        {
+            return (batchsize, tablename, connection, fields, filename, debug);
+        }
+        public void Deconstruct(out int batchsize, out string tablename, out string connection, out string fields, out FileInfo filename, out bool debug)
+        { batchsize = this.batchsize; tablename = this.tablename; connection = this.connection; fields = this.fields; filename = this.filename; debug = this.debug; }
     }
 
+
+
+    public class ConsoleWriterEventArgs : EventArgs
+    {
+        public string Value { get; private set; }
+        public ConsoleWriterEventArgs(string value)
+        {
+            Value = value;
+        }
+    }
+
+
+
+
+    //XEFileReader eventStream = new XEventStream;// _classThatLogs;
+    //eventStream.filename = filename.FullName;
+    //eventStream.connection = connection;
+    //eventStream.tableName = tablename;
+
+    //try
+    //{
+    //    var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields?.Split(","));
+
+    //    Console.WriteLine($"rows read        {rowsread}");
+    //    Console.WriteLine($"rows bulk loaded {rowsinserted}");
+    //}
+    //catch (Exception ex)
+    //{
+    //    Console.Error.Write(ex.Message);
+    //    throw ex;
+    //}
 }

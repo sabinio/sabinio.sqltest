@@ -39,26 +39,51 @@ namespace SabinIO.SqlTest.Tests
         CancellationToken CT;
 
         [TestCase]
-        public void LiveStreamCapturesTheEvents()
+        public async Task  LiveStreamCapturesTheEvents()
         {
             using var T = new TracedConnection() { ConnectionStr = "data source=.;Trusted_Connection=True" };
             T.Init();
-            var samplexml = new XELiveEventStreamer(T.ConnectionStr, T.XEventSessionName);
+            var samplexml = new XELiveEventStreamer($"{T.ConnectionStr};Application Name=Trace" , T.XEventSessionName);
 
             var tokenSource2 = new CancellationTokenSource();
             CT = tokenSource2.Token;
             //                var Trace = samplexml.ReadEventStream(foo, CT);
             List<IXEvent> bob = new List<IXEvent>();
 
-            var Trace = samplexml.ReadEventStream(
-                evt =>
-                {
-                    TestContext.WriteLine($"Logging Event {evt.Name}");
-                    bob.Add(evt);
-                    return Task.CompletedTask;
-                }, CT);
-            //                var Trace = samplexml.ReadEventStream(x => { return new Task(() => { bob.Add(x); }); }, CT);
+            //var Trace = new Thread(async () =>
+            //{
+            //    try
+            //    {
+            //        await samplexml.ReadEventStream(
+            //       evt =>
+            //       {
+            //           TestContext.WriteLine($"Logging Event {evt.Name}");
+            //           bob.Add(evt);
+            //           return Task.CompletedTask;
+            //       }, CancellationToken.None);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //       // throw;
+            //    }
+            //});
+            //Trace.Name = "simon";
+            //Trace.Priority = ThreadPriority.AboveNormal;           //                var Trace = samplexml.ReadEventStream(x => { return new Task(() => { bob.Add(x); }); }, CT);
+            //Trace.Start();
+            Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId }");
 
+            var TraceReader = Task.Run(async ()=> await samplexml.ReadEventStream(
+                 evt =>
+                 {
+                     Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId }");
+                     TestContext.WriteLine($"Logging Event {evt.Name}");
+                     bob.Add(evt);
+                     return Task.CompletedTask;
+                 }, CT)).ConfigureAwait(false);
+
+            await Task.Delay(100);
+
+            
             var result = T.Execute<string>("select 'Simon'");
             
             Assert.That(() => result == "Simon");
@@ -67,12 +92,13 @@ namespace SabinIO.SqlTest.Tests
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            while (sw.ElapsedMilliseconds < 10000)
-            {
-                Trace.Wait(1000);
-            }
+ //           while (sw.ElapsedMilliseconds < 10000)
+   //         {
+                await Task.Delay(1000);
+     //       }
             sw.Stop();
             Assert.That(bob, Has.Count.EqualTo(4));
+          //  tokenSource2.Cancel();
             // Assert.That(() => results.Where(_ => _.name == "sql_statement_completed" && _.actions["sql_text"] == "select 'Simon'").Any());
 
 

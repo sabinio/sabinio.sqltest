@@ -51,7 +51,7 @@ namespace SabinIO.xEvent.Lib
 
         public bool Read()
         {
-            return ReadAsync().Result;
+            return ReadAsync().GetAwaiter().GetResult();
         }
         public async Task<bool> ReadAsync()
         {

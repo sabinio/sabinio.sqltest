@@ -2,7 +2,7 @@
   "profiles": {
     "SabinIO.xEvent.App": {
       "commandName": "Project",
-      "commandLineArgs": "--filename ."
+      "commandLineArgs": "--filename my.log --logFile t.log --logLevel"
     }
   }
 }

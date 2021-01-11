@@ -68,7 +68,7 @@ namespace SabinIO.xEvent.Lib.Tests
 
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            var samplexmlfile = Path.Combine(assemblyPath, "sql_large.xel");
+            var samplexmlfile = Path.Combine(assemblyPath, "sqlother.xel");
 
 
             XEFileReader eventStream = provider.GetRequiredService<XEFileReader>();

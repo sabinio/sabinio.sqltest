@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.XEvent.XELite;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace SabinIO.xEvent.Lib
         public XEFileReader(ILogger<XEFileReader> logger)
         {
             _logger = logger;
-            events = new XEventStream();
+            events = new XEventStream(_logger);
         }
         public async Task<(int rowsread, int rowsinserted)> ReadAndLoad( string[] fields)
         {
@@ -55,22 +56,38 @@ namespace SabinIO.xEvent.Lib
             var samplexml = new XEFileEventStreamer(filename);
 
             var CT = new CancellationToken();
-
-            await samplexml.ReadEventStream(() => Task.CompletedTask
-            , (x) => events.AddAsync(x)
-            , CT);
-
-            events.finishedLoading = true;
+            try
+            {
+                await samplexml.ReadEventStream(() => Task.CompletedTask
+                , (x) => events.AddAsync(x)
+                , CT);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "error reading the xel trace file");
+            }
+            finally
+            {
+                events.finishedLoading = true;
+            }
             return events.Count;
         }
 
+        public IEnumerable<IXEvent> ReadEvents()
+        {
+            while (events.Read())
+            {
+                yield return events.Current;
+            }
+        }
+            
         public async Task<int> BulkLoadAsync()
         {
             
             try
             {
-                Debug.WriteLine("Starting Bulk Load task");
-                Trace.WriteLine("Trace. tarting Bulk Load task");
+                _logger?.LogInformation("Starting Bulk Load task");
+                _logger?.LogInformation("Trace. tarting Bulk Load task");
                 using var Con = new SqlConnection(connection);
                 Con.Open();
 
@@ -81,13 +98,14 @@ namespace SabinIO.xEvent.Lib
                     BatchSize = batchsize,
                     
                 };
-                Trace.WriteLine("Trace. Starting Task");
+                _logger?.LogInformation("Trace. Starting Task");
                 await bc.WriteToServerAsync(events);
                 return bc.RowsCopied;
             }
             catch (Exception ex)
             {
-                Trace.Write(ex.Message);
+
+                _logger?.LogError(ex,"error in BulkLoadAsync");
                 throw ex;
 
              

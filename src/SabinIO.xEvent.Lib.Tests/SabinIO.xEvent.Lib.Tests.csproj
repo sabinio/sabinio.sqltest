@@ -27,6 +27,9 @@
     <None Update="sqlother.xel">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="truncated.xel">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="sql_large.xel">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

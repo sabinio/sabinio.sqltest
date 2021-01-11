@@ -95,7 +95,7 @@ namespace SabinIO.xEvent.App
 
             if (logLevel !=null)
             {
-                config.WriteTo.Console(Enum.Parse<LogEventLevel>(logLevel),outputTemplate:"{message}----");
+                config.WriteTo.Console(Enum.Parse<LogEventLevel>(logLevel),outputTemplate:"{message}\n");
             }
 
             var logFile = ThisCmd.ValueForOption<FileInfo>("--logFile");

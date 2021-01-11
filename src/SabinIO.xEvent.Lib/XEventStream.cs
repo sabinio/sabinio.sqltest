@@ -1,4 +1,5 @@
-﻿using Microsoft.SqlServer.XEvent.XELite;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.SqlServer.XEvent.XELite;
 using System;
 using System.Collections.Concurrent;
 using System.Data;
@@ -20,10 +21,11 @@ namespace SabinIO.xEvent.Lib
         public bool finishedLoading = false;
         IXEvent CurrentItem;
         private DateTime lastRead;
+        private ILogger _logger;
 
-
-        public XEventStream()
+        public XEventStream(ILogger logger)
         {
+            _logger = logger;
             //_list = new List<IXEvent>();
             _Q = new ConcurrentQueue<IXEvent>();
             lastRead = DateTime.Now;
@@ -71,6 +73,13 @@ namespace SabinIO.xEvent.Lib
             return true;
         }
 
+        public IXEvent Current
+        {
+            get
+            {
+                return CurrentItem;
+            }
+        }
         public object GetValue(int i)
         {
             switch (i)

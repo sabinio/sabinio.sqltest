@@ -85,6 +85,29 @@ namespace SabinIO.xEvent.Lib.Tests
             TestContext.Write($"rows bulk loaded {rowsinserted}");
         }
 
+        [Test]
+        public async Task IncompleteFileDoesntError()
+        {
+            System.Diagnostics.Trace.WriteLine("bugger");
+
+            string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            var samplexmlfile = Path.Combine(assemblyPath, "truncated.xel");
+
+
+            XEFileReader eventStream = provider.GetRequiredService<XEFileReader>();
+            eventStream.filename = samplexmlfile;
+            eventStream.connection = "data source=.;Trusted_Connection=True;initial catalog=test";
+            eventStream.tableName = "trace";
+            
+            var rowsread = await eventStream.ReadAsync();
+            var events = eventStream.ReadEvents().ToList();
+
+
+            Assert.That(rowsread, Is.Not.EqualTo(0));
+            Assert.That(rowsread, Is.EqualTo(40));
+            TestContext.Write($"rows read        {rowsread}");
+        }
 
     }
 }

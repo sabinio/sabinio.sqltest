@@ -28,6 +28,7 @@ stages:
         packageType: 'sdk'
         version: '5.x'
         performMultiLevelLookup: true
+      enabled: false
     - task: DotNetCoreCLI@2
       inputs:
         command: 'restore'

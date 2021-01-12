@@ -11,6 +11,7 @@
     <IncludeSymbolsInSingleFile>True</IncludeSymbolsInSingleFile>
    <!-- <PublishTrimmed>true</PublishTrimmed>-->
     <PublishReadyToRun>true</PublishReadyToRun>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   
   <ItemGroup>

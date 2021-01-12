@@ -41,6 +41,7 @@ namespace SabinIO.xEvent.App
                 rootCommand.AddOption(new Option<string>("--logFile", description: "name of log file"));
                 rootCommand.AddOption(new Option<bool>("--debug", getDefaultValue: () => false, description: "outputs debug information to the standard out"));
                 rootCommand.AddOption(new Option<int>("--logLevel", getDefaultValue: () => -1, description: "outputs debug information to the standard out"));
+                rootCommand.AddOption(new Option<int>("--progress", getDefaultValue: () => 1000000, description: "how many rows to be moved before notifying of progress"));
 
                 var p = rootCommand.Parse(args);
                 var logFilePath = "";

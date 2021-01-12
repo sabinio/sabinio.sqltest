@@ -123,14 +123,13 @@ namespace SabinIO.xEvent.App
          var (batchsize, tablename, connection, fields, filename, debug, logLevel, progress) = Option; 
 
          Log.Information("The value for --batchsize is: {batchsize}", batchsize);
-
-             Console.WriteLine($"    --filename is: {filename?.FullName ?? "null"}");
-             Console.WriteLine($"    --connection is: {connection}");
-         Console.WriteLine($"    --table is: {tablename}");
-             Console.WriteLine($"    --fields is: {fields}");
-         Console.WriteLine($"    --batchsize is: {batchsize}");
-         Console.WriteLine($"    --progress is: {progress}");
-         Console.WriteLine($"    --logLevel is: {logLevel}");
+         Log.Information($"    --filename is: {filename?.FullName ?? "null"}");
+            Log.Information($"    --connection is: {connection}");
+            Log.Information($"    --table is: {tablename}");
+            Log.Information($"    --fields is: {fields}");
+            Log.Information($"    --batchsize is: {batchsize}");
+            Log.Information($"    --progress is: {progress}");
+         Log.Information($"    --logLevel is: {logLevel}");
          
          XEFileReader eventStream = host.Services.GetRequiredService<XEFileReader>();
 
@@ -147,15 +146,15 @@ namespace SabinIO.xEvent.App
              var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields?.Split(","));
              sw.Stop();
 
-             Console.WriteLine($"rows read        {rowsread}");
-             Console.WriteLine($"rows bulk loaded {rowsinserted}");
-             Console.WriteLine($"rows/ms          {rowsinserted/sw.ElapsedMilliseconds}");
+             Log.Information($"rows read        {rowsread}");
+             Log.Information($"rows bulk loaded {rowsinserted}");
+             Log.Information($"rows/ms          {rowsinserted/sw.ElapsedMilliseconds}");
 
          }
          catch (Exception ex)
          {
              
-             Console.Error.WriteLine($"Error occurred processing the file {filename.FullName}\n {ex.Message}");
+            Log.Error(ex,$"Error occurred processing the file {filename.FullName}\n {ex.Message}");
 
          }
      }

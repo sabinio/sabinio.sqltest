@@ -100,7 +100,7 @@ namespace SabinIO.xEvent.App
 
             if (logLevel != null)
             {
-                config.WriteTo.Console(logLevel.GetValueOrDefault<LogEventLevel>(), outputTemplate: "{Message}\n");
+                config.WriteTo.Console((LogEventLevel)logLevel.GetValueOrDefault<int>(), outputTemplate: "{Message}\n");
             }
 
             var logFile = ThisCmd.ValueForOption<FileInfo>("--logFile");

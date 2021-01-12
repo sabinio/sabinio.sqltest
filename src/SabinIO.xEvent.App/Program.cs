@@ -142,10 +142,15 @@ namespace SabinIO.xEvent.App
 
          try
          {
+             Stopwatch sw = new Stopwatch();
+             sw.Start();
              var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields?.Split(","));
+             sw.Stop();
 
              Console.WriteLine($"rows read        {rowsread}");
              Console.WriteLine($"rows bulk loaded {rowsinserted}");
+             Console.WriteLine($"rows/ms          {rowsinserted/sw.ElapsedMilliseconds}");
+
          }
          catch (Exception ex)
          {

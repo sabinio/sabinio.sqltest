@@ -154,7 +154,8 @@ namespace SabinIO.xEvent.App
          }
          catch (Exception ex)
          {
-             Console.Error.Write(ex.Message);
+             
+             Console.Error.WriteLine($"Error occurred processing the file {filename.FullName}\n {ex.Message}");
 
          }
      }

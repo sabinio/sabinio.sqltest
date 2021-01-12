@@ -10,6 +10,7 @@ using System.CommandLine.Builder;
 using System.CommandLine.Hosting;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,8 +26,8 @@ namespace SabinIO.xEvent.App
             {
 
                 //Needed to capture anything before the full logging is implemented
-                var config = new LoggerConfiguration().WriteTo.Console(outputTemplate:"{Message}\n");
-             
+                var config = new LoggerConfiguration().WriteTo.Console(outputTemplate: "{Message}\n");
+
                 // Create a root command with some options
                 var rootCommand = new RootCommand()
                 {
@@ -48,12 +49,13 @@ namespace SabinIO.xEvent.App
                     logFilePath = p.ValueForOption<FileInfo>("--logFile").FullName;
                 }
                 Log.Logger = config.CreateLogger();
-                
+
                 rootCommand.Description = "Extended event bulk loader ";
+
 
                 var t = new CommandLineBuilder(rootCommand)
                                     .UseDefaults()
-                                    .UseMiddleware(i => SetupStaticLogger(i.ParseResult))
+                                    .CancelOnProcessTermination()
                                     .UseHost(Host.CreateDefaultBuilder,
                                     host =>
                                         host
@@ -61,19 +63,17 @@ namespace SabinIO.xEvent.App
                                         services
                                             .AddTransient<XEFileReader>()
                                             .AddOptions<XEventAppOptions>().BindCommandLine()
-                                        ).UseSerilog()
 
+                                        ).UseSerilog()
+                                       .UseConsoleLifetime(c => c.SuppressStatusMessages = true)
                                         )
-                                    .UseExceptionHandler((ex, i) =>
-                                    {
-                                        Log.Error(ex.Message);
-                                        Log.Fatal("Bugger");
-                                    });
+                                    .UseMiddleware(i => SetupStaticLogger(i.ParseResult))
+                                  ;
 
                 var b = t.Build();
 
                 Log.CloseAndFlush();
-                return  await b.InvokeAsync(args).ConfigureAwait(false);
+                return await b.InvokeAsync(args).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -89,13 +89,17 @@ namespace SabinIO.xEvent.App
 
         private static void SetupStaticLogger(ParseResult ThisCmd)
         {
-         
-            var config = new LoggerConfiguration().Enrich.FromLogContext();
-            var logLevel = ThisCmd.CommandResult.GetArgumentValueOrDefault<string>("--logLevel");
 
-            if (logLevel !=null)
+            var config = new LoggerConfiguration().Enrich.FromLogContext();
+            var o = ThisCmd.FindResultFor(new Option("--logLevel"));
+
+            var logLevel = ThisCmd.CommandResult.OptionResult("--logLevel");//
+            //.ValueForOption<int>("--logLevel");
+            ThisCmd.HasOption("--logLevel");
+
+            if (logLevel != null)
             {
-                config.WriteTo.Console(Enum.Parse<LogEventLevel>(logLevel),outputTemplate:"{message}\n");
+                config.WriteTo.Console(logLevel.GetValueOrDefault<LogEventLevel>(), outputTemplate: "{Message}\n");
             }
 
             var logFile = ThisCmd.ValueForOption<FileInfo>("--logFile");
@@ -104,27 +108,31 @@ namespace SabinIO.xEvent.App
             config.WriteTo.Debug();
 
             Log.Logger = config.CreateLogger();
-           
+            var listener = new SerilogTraceListener.SerilogTraceListener();
+            Trace.Listeners.Add(listener);
+
         }
 
 
         internal static ICommandHandler Handler { get; } = CommandHandler.Create(
      async (IConsole console, IHost host, CancellationToken cancelToken) =>
      {
-         var (batchsize, tablename, connection, fields, filename, debug) = host.Services.GetRequiredService<IOptions<XEventAppOptions>>().Value;
+         var (batchsize, tablename, connection, fields, filename, debug, logLevel) = host.Services.GetRequiredService<IOptions<XEventAppOptions>>().Value;
 
-         Console.WriteLine($"The value for --batchsize is: {batchsize}");
+         Log.Information("The value for --batchsize is: {batchsize}", batchsize);
          Console.WriteLine($"The value for --filename is: {filename?.FullName ?? "null"}");
          Console.WriteLine($"The value for --connection is: {connection}");
          Console.WriteLine($"The value for --table is: {tablename}");
          Console.WriteLine($"The value for --fields is: {fields}");
+         Console.WriteLine($"The value for --logLevel is: {logLevel}");
 
          XEFileReader eventStream = host.Services.GetRequiredService<XEFileReader>();
-         
-         eventStream.filename = filename.FullName;
+
+         eventStream.filename = filename?.FullName;
          eventStream.connection = connection;
          eventStream.tableName = tablename;
          eventStream.batchsize = batchsize;
+
 
          try
          {
@@ -154,15 +162,16 @@ namespace SabinIO.xEvent.App
         public string fields { get; set; }
         public FileInfo filename { get; set; }
         public bool debug { get; set; }
+        public LogEventLevel logLevel { get; set; }
 
 #pragma warning restore IDE1006 // Naming Styles
 
-        public (int batchsize,  string tablename,  string connection,  string fields,  FileInfo filename,  bool debug) bob()
+        public (int batchsize,  string tablename,  string connection,  string fields,  FileInfo filename,  bool debug) Deconstruct()
         {
             return (batchsize, tablename, connection, fields, filename, debug);
         }
-        public void Deconstruct(out int batchsize, out string tablename, out string connection, out string fields, out FileInfo filename, out bool debug)
-        { batchsize = this.batchsize; tablename = this.tablename; connection = this.connection; fields = this.fields; filename = this.filename; debug = this.debug; }
+        public void Deconstruct(out int batchsize, out string tablename, out string connection, out string fields, out FileInfo filename, out bool debug, out LogEventLevel logLevel)
+        { batchsize = this.batchsize; tablename = this.tablename; connection = this.connection; fields = this.fields; filename = this.filename; debug = this.debug; logLevel = this.logLevel; }
     }
 
 

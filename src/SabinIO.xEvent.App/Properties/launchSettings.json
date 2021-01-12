@@ -2,7 +2,7 @@
   "profiles": {
     "SabinIO.xEvent.App": {
       "commandName": "Project",
-      "commandLineArgs": "--filename my.log --logFile t.log --logLevel"
+      "commandLineArgs": "--batchsize 1111 --logLevel 5 --filename ..\\..\\..\\..\\..\\SabinIO.xEvent.Lib.Tests\\sqlother.xel --tablename trace --connection \"data source=.;initial catalog=test;trusted_connection=true\" --fields \"page_faults,cpu_time,sql_text,duration\""
     }
   }
 }

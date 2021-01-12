@@ -21,7 +21,7 @@ namespace SabinIO.xEvent.Lib
         public bool finishedLoading = false;
         IXEvent CurrentItem;
         private DateTime lastRead;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public XEventStream(ILogger logger)
         {
@@ -40,7 +40,7 @@ namespace SabinIO.xEvent.Lib
             if (Count % 10000 == 0)
             {
 
-                System.Diagnostics.Trace.WriteLine($"AddASync {_count}");
+                _logger?.LogInformation($"AddASync {_count}");
             }
             if (_Q.Count > 10000)
             {
@@ -58,18 +58,17 @@ namespace SabinIO.xEvent.Lib
         public async Task<bool> ReadAsync()
         {
             lastRead = DateTime.Now;
-            if (readposition % 10000 == 0) System.Diagnostics.Trace.WriteLine($"ReadAsync {readposition}");
+            if (readposition % 10000 == 0) _logger?.LogInformation($"ReadAsync {readposition}");
             while (_Q.Count == 0)// readposition >= this._list.Count-1)
             {
                 if (finishedLoading) return false;
 
-                System.Diagnostics.Trace.WriteLine("Waiting for More Events");
+                _logger.LogInformation("Waiting for More Events");
                 await Task.Delay(1000);
             }
             while (!_Q.TryDequeue(out CurrentItem)) ;
 
             readposition++;
-            //    CurrentItem =             _list[readposition];
             return true;
         }
 
@@ -115,7 +114,6 @@ namespace SabinIO.xEvent.Lib
         public bool IsDBNull(int i)
         {
             return false;
-            //            throw new NotImplementedException();
         }
 
         public int Depth { get { return 0; } }

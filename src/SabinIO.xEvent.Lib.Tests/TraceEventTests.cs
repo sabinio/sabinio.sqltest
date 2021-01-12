@@ -104,7 +104,7 @@ namespace SabinIO.xEvent.Lib.Tests
             var events = eventStream.ReadEvents().ToList();
 
 
-            Assert.That(rowsread, Is.Not.EqualTo(0));
+            Assert.That(rowsread, Is.EqualTo(events.Count));
             Assert.That(rowsread, Is.EqualTo(40));
             TestContext.Write($"rows read        {rowsread}");
         }

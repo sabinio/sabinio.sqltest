@@ -14,13 +14,17 @@ stages:
   jobs:
   - job: BuildAndTest 
     steps:
-    - task: NuGetToolInstaller@1
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '5.0'
 
     - task: DotNetCoreCLI@2
       inputs:
         command: 'build'
         projects: '**/*.sln'
         arguments: '--configuration $(buildConfiguration) /m:4'
+        includeNuGetOrg: true
 
     - task: VSTest@2
       inputs:

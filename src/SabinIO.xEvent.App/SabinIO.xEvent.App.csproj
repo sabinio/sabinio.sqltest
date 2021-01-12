@@ -12,6 +12,8 @@
    <!-- <PublishTrimmed>true</PublishTrimmed>-->
     <PublishReadyToRun>true</PublishReadyToRun>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+
   </PropertyGroup>
   
   <ItemGroup>

@@ -18,6 +18,10 @@ stages:
       inputs:
         packageType: 'sdk'
         version: '5.0.1'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        projects: '**/*.sln'
 
     - task: DotNetCoreCLI@2
       inputs:

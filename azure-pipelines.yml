@@ -14,6 +14,15 @@ stages:
   jobs:
   - job: BuildAndTest 
     steps:
+    - task: Cache@2
+      inputs:
+        key: 'nuget | "$(Agent.OS)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+        path: '$(NUGET_PACKAGES)'
+        restoreKeys: |
+          nuget | "$(Agent.OS)"
+          nuget
+      displayName: Cache Nuget packages
+      
     - task: UseDotNet@2
       inputs:
         packageType: 'sdk'

@@ -5,7 +5,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-
+  NUGET_PACKAGES: $(build.SourcesDirectory)\packages
 stages:
 - stage: build
   pool:

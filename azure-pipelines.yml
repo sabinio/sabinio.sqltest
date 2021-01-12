@@ -17,7 +17,7 @@ stages:
     - task: UseDotNet@2
       inputs:
         packageType: 'sdk'
-        version: '5.0.101'
+        version: '5.x'
     - task: DotNetCoreCLI@2
       inputs:
         command: 'restore'

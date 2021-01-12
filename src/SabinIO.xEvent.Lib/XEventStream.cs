@@ -11,16 +11,15 @@ namespace SabinIO.xEvent.Lib
     public class XEventStream : IDataReader
     {
         private int _count = 0;
-        private readonly ConcurrentQueue<IXEvent> _Q;
+        private readonly BlockingCollection<IXEvent> _Q;
         //        private List<IXEvent> _list;
 
         int readposition = -1;
         private string[] _fieldList;
         public string[] fields { get { return _fieldList; } set { _fieldList = value; } }
 
-        public bool finishedLoading = false;
+        public bool finishedLoading { set { _Q.CompleteAdding(); } }
         IXEvent CurrentItem;
-        private DateTime lastRead;
         private readonly ILogger _logger;
         public int progress = 100000;
         public int maxQueueSize = 10000;
@@ -29,49 +28,33 @@ namespace SabinIO.xEvent.Lib
         {
             _logger = logger;
             //_list = new List<IXEvent>();
-            _Q = new ConcurrentQueue<IXEvent>();
-            lastRead = DateTime.Now;
-
+            _Q = new BlockingCollection<IXEvent>(maxQueueSize);
         }
-        public async Task AddAsync(IXEvent item)
+        public void Add(IXEvent item)
         {
             _count++;
 
-
-            _Q.Enqueue(item);
+            _Q.Add(item);
             if (Count % progress == 0)
             {
 
                 _logger?.LogInformation($"AddASync {_count}");
             }
-            if (_Q.Count > maxQueueSize)
-            {
-                if ((DateTime.Now - lastRead).TotalSeconds > 10) throw new Exception("No data has been read for 60 seconds aborting");
-                await Task.Delay(5);
-
-            }
-
         }
 
         public bool Read()
         {
-            return ReadAsync().GetAwaiter().GetResult();
-        }
-        public async Task<bool> ReadAsync()
-        {
-            lastRead = DateTime.Now;
+           
             if (readposition % progress == 0) _logger?.LogInformation($"ReadAsync {readposition}");
-            while (_Q.Count == 0)// readposition >= this._list.Count-1)
+            if (_Q.IsCompleted)
             {
-                if (finishedLoading) return false;
-
-                _logger.LogInformation("Waiting for More Events");
-                await Task.Delay(1000);
+                return false;
             }
-            while (!_Q.TryDequeue(out CurrentItem)) ;
-
-            readposition++;
-            return true;
+            else {
+                CurrentItem = _Q.Take();
+                readposition++;
+                return true;
+            }
         }
 
         public IXEvent Current

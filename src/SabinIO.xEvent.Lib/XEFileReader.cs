@@ -59,10 +59,10 @@ namespace SabinIO.xEvent.Lib
             try
             {
                 await samplexml.ReadEventStream(() => Task.CompletedTask
-                , (x) => events.AddAsync(x)
+                , (x) => Task.Run(() => events.Add(x))
                 , ct);
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 return events.Count;
             }
@@ -106,7 +106,7 @@ namespace SabinIO.xEvent.Lib
                 {
                     await bc.WriteToServerAsync(events, ct);
                 }
-                catch (OperationCanceledException ex)
+                catch (OperationCanceledException)
                 {
                     return bc.RowsCopied;
                 }

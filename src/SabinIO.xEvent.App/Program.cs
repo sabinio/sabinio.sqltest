@@ -92,7 +92,6 @@ namespace SabinIO.xEvent.App
         {
 
             var config = new LoggerConfiguration().Enrich.FromLogContext();
-            var o = ThisCmd.FindResultFor(new Option("--logLevel"));
 
             var logLevel = ThisCmd.CommandResult.OptionResult("--logLevel");//
             //.ValueForOption<int>("--logLevel");
@@ -121,11 +120,11 @@ namespace SabinIO.xEvent.App
 
          Log.Information("The value for --batchsize is: {batchsize}", batchsize);
          Log.Information($"    --filename is: {filename?.FullName ?? "null"}");
-            Log.Information($"    --connection is: {connection}");
-            Log.Information($"    --table is: {tablename}");
-            Log.Information($"    --fields is: {fields}");
-            Log.Information($"    --batchsize is: {batchsize}");
-            Log.Information($"    --progress is: {progress}");
+        Log.Information($"    --connection is: {connection}");
+        Log.Information($"    --table is: {tablename}");
+        Log.Information($"    --fields is: {fields}");
+        Log.Information($"    --batchsize is: {batchsize}");
+        Log.Information($"    --progress is: {progress}");
          Log.Information($"    --logLevel is: {logLevel}");
          
          XEFileReader eventStream = host.Services.GetRequiredService<XEFileReader>();
@@ -152,6 +151,7 @@ namespace SabinIO.xEvent.App
          {
              
             Log.Error(ex,$"Error occurred processing the file {filename.FullName}\n {ex.Message}");
+             throw;
 
          }
      }

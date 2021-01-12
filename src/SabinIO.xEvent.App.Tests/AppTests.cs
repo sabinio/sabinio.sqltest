@@ -70,7 +70,8 @@ namespace XEvent.App.Tests
                 using var r = new StreamReader(ErrorStream);
                 ErrorMessage = r.ReadToEnd();
             }
-            Assert.That(ErrorMessage, Is.EqualTo("Cannot access destination table 'Foo'."));
+            
+            Assert.That(ErrorMessage, Does.Contain("Cannot access destination table 'Foo'."));
 
 
         }

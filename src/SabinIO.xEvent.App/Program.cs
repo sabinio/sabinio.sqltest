@@ -98,10 +98,7 @@ namespace SabinIO.xEvent.App
             //.ValueForOption<int>("--logLevel");
             ThisCmd.HasOption("--logLevel");
 
-            if (logLevel != null)
-            {
-                config.WriteTo.Console((LogEventLevel)logLevel.GetValueOrDefault<int>(), outputTemplate: "{Message}\n");
-            }
+            config.WriteTo.Console( outputTemplate: "{Message}\n");
 
             var logFile = ThisCmd.ValueForOption<FileInfo>("--logFile");
             if (logFile != null) config.WriteTo.File(logFile.FullName);
@@ -143,9 +140,9 @@ namespace SabinIO.xEvent.App
          {
              Stopwatch sw = new Stopwatch();
              sw.Start();
-             var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields?.Split(","));
+             var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields?.Split(","), cancelToken);
              sw.Stop();
-
+             if (cancelToken.IsCancellationRequested) { Log.Information("Processing aborted due to cancellation request, Numbers below are rows processed so far"); }
              Log.Information($"rows read        {rowsread}");
              Log.Information($"rows bulk loaded {rowsinserted}");
              Log.Information($"rows/ms          {rowsinserted/sw.ElapsedMilliseconds}");

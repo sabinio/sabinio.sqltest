@@ -24,7 +24,7 @@ namespace SabinIO.xEvent.Lib
             _logger = logger;
             events = new XEventStream(_logger);
         }
-        public async Task<(int rowsread, int rowsinserted)> ReadAndLoad( string[] fields)
+        public async Task<(int rowsread, int rowsinserted)> ReadAndLoad( string[] fields, CancellationToken ct )
         {
             
             using (_logger.BeginScope("Starting ReadAndLoad"))
@@ -34,14 +34,14 @@ namespace SabinIO.xEvent.Lib
                 {
                     _logger.LogInformation("Reader started");
                     _logger.LogInformation("Reader {ProcessorId}-{ThreadId}", Thread.GetCurrentProcessorId(), Thread.CurrentThread.ManagedThreadId);
-                    return await ReadAsync();
+                    return await ReadAsync(ct);
                 });
 
                 var bulkLoadTask = Task<int>.Run(async () =>
                 {
                     _logger.LogInformation("BulkLoadAsync started");
                     _logger.LogInformation("BulkLoadAsync {ProcessorId}-{ThreadId}", Thread.GetCurrentProcessorId(), Thread.CurrentThread.ManagedThreadId);
-                    return await BulkLoadAsync();
+                    return await BulkLoadAsync(ct);
                 });
 
                 await readerTask.ConfigureAwait(false);
@@ -52,16 +52,19 @@ namespace SabinIO.xEvent.Lib
         }
 
 
-        public async Task<int> ReadAsync()
+        public async Task<int> ReadAsync(CancellationToken ct)
         {
             var samplexml = new XEFileEventStreamer(filename) ;
 
-            var CT = new CancellationToken();
             try
             {
                 await samplexml.ReadEventStream(() => Task.CompletedTask
                 , (x) => events.AddAsync(x)
-                , CT);
+                , ct);
+            }
+            catch (OperationCanceledException ex)
+            {
+                return events.Count;
             }
             catch (Exception ex)
             {
@@ -82,16 +85,15 @@ namespace SabinIO.xEvent.Lib
             }
         }
             
-        public async Task<int> BulkLoadAsync()
+        public async Task<int> BulkLoadAsync(CancellationToken ct)
         {
-            
+           ;
             try
             {
                 _logger?.LogInformation("Starting Bulk Load task");
                 _logger?.LogInformation("Trace. tarting Bulk Load task");
                 using var Con = new SqlConnection(connection);
                 Con.Open();
-
                 SqlBulkCopy bc = new SqlBulkCopy(Con)
                 {
                     DestinationTableName = tableName,
@@ -100,16 +102,21 @@ namespace SabinIO.xEvent.Lib
                     
                 };
                 _logger?.LogInformation("Trace. Starting Task");
-                await bc.WriteToServerAsync(events);
+                try
+                {
+                    await bc.WriteToServerAsync(events, ct);
+                }
+                catch (OperationCanceledException ex)
+                {
+                    return bc.RowsCopied;
+                }
                 return bc.RowsCopied;
             }
             catch (Exception ex)
             {
 
                 _logger?.LogError(ex,"error in BulkLoadAsync");
-                throw ex;
-
-             
+                throw ex;            
             }
         }
     }

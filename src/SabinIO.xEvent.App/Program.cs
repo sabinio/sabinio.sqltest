@@ -117,22 +117,27 @@ namespace SabinIO.xEvent.App
         internal static ICommandHandler Handler { get; } = CommandHandler.Create(
      async (IConsole console, IHost host, CancellationToken cancelToken) =>
      {
-         var (batchsize, tablename, connection, fields, filename, debug, logLevel) = host.Services.GetRequiredService<IOptions<XEventAppOptions>>().Value;
+
+         var Option = host.Services.GetRequiredService<IOptions<XEventAppOptions>>().Value;
+         var (batchsize, tablename, connection, fields, filename, debug, logLevel, progress) = Option; 
 
          Log.Information("The value for --batchsize is: {batchsize}", batchsize);
-         Console.WriteLine($"The value for --filename is: {filename?.FullName ?? "null"}");
-         Console.WriteLine($"The value for --connection is: {connection}");
-         Console.WriteLine($"The value for --table is: {tablename}");
-         Console.WriteLine($"The value for --fields is: {fields}");
-         Console.WriteLine($"The value for --logLevel is: {logLevel}");
 
+             Console.WriteLine($"    --filename is: {filename?.FullName ?? "null"}");
+             Console.WriteLine($"    --connection is: {connection}");
+         Console.WriteLine($"    --table is: {tablename}");
+             Console.WriteLine($"    --fields is: {fields}");
+         Console.WriteLine($"    --batchsize is: {batchsize}");
+         Console.WriteLine($"    --progress is: {progress}");
+         Console.WriteLine($"    --logLevel is: {logLevel}");
+         
          XEFileReader eventStream = host.Services.GetRequiredService<XEFileReader>();
 
          eventStream.filename = filename?.FullName;
          eventStream.connection = connection;
          eventStream.tableName = tablename;
          eventStream.batchsize = batchsize;
-
+         eventStream.progress = progress;
 
          try
          {
@@ -162,16 +167,13 @@ namespace SabinIO.xEvent.App
         public string fields { get; set; }
         public FileInfo filename { get; set; }
         public bool debug { get; set; }
-        public LogEventLevel logLevel { get; set; }
+        public int logLevel { get; set; }
+        public int progress { get; set; }
 
 #pragma warning restore IDE1006 // Naming Styles
 
-        public (int batchsize,  string tablename,  string connection,  string fields,  FileInfo filename,  bool debug) Deconstruct()
-        {
-            return (batchsize, tablename, connection, fields, filename, debug);
-        }
-        public void Deconstruct(out int batchsize, out string tablename, out string connection, out string fields, out FileInfo filename, out bool debug, out LogEventLevel logLevel)
-        { batchsize = this.batchsize; tablename = this.tablename; connection = this.connection; fields = this.fields; filename = this.filename; debug = this.debug; logLevel = this.logLevel; }
+        public void Deconstruct(out int batchsize, out string tablename, out string connection, out string fields, out FileInfo filename, out bool debug, out int logLevel, out int progress)
+        { batchsize = this.batchsize; tablename = this.tablename; connection = this.connection; fields = this.fields; filename = this.filename; debug = this.debug; logLevel = this.logLevel; progress = this.progress; }
     }
 
 

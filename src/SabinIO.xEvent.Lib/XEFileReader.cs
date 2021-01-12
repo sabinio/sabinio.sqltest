@@ -15,6 +15,7 @@ namespace SabinIO.xEvent.Lib
         public  string connection;
         public string tableName;
         public int batchsize = 100000;
+        public int progress { set { events.progress = value; } }
         readonly XEventStream events;
         private readonly ILogger<XEFileReader> _logger;
 
@@ -53,7 +54,7 @@ namespace SabinIO.xEvent.Lib
 
         public async Task<int> ReadAsync()
         {
-            var samplexml = new XEFileEventStreamer(filename);
+            var samplexml = new XEFileEventStreamer(filename) ;
 
             var CT = new CancellationToken();
             try

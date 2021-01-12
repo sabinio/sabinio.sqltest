@@ -22,6 +22,8 @@ namespace SabinIO.xEvent.Lib
         IXEvent CurrentItem;
         private DateTime lastRead;
         private readonly ILogger _logger;
+        public int progress = 100000;
+        public int maxQueueSize = 10000;
 
         public XEventStream(ILogger logger)
         {
@@ -37,14 +39,14 @@ namespace SabinIO.xEvent.Lib
 
 
             _Q.Enqueue(item);
-            if (Count % 10000 == 0)
+            if (Count % progress == 0)
             {
 
                 _logger?.LogInformation($"AddASync {_count}");
             }
-            if (_Q.Count > 10000)
+            if (_Q.Count > maxQueueSize)
             {
-                if ((DateTime.Now - lastRead).TotalSeconds >10) throw new Exception("No data has been read for 60 seconds aborting");
+                if ((DateTime.Now - lastRead).TotalSeconds > 10) throw new Exception("No data has been read for 60 seconds aborting");
                 await Task.Delay(5);
 
             }
@@ -58,7 +60,7 @@ namespace SabinIO.xEvent.Lib
         public async Task<bool> ReadAsync()
         {
             lastRead = DateTime.Now;
-            if (readposition % 10000 == 0) _logger?.LogInformation($"ReadAsync {readposition}");
+            if (readposition % progress == 0) _logger?.LogInformation($"ReadAsync {readposition}");
             while (_Q.Count == 0)// readposition >= this._list.Count-1)
             {
                 if (finishedLoading) return false;
@@ -81,6 +83,7 @@ namespace SabinIO.xEvent.Lib
         }
         public object GetValue(int i)
         {
+
             switch (i)
             {
                 case 1:
@@ -121,127 +124,173 @@ namespace SabinIO.xEvent.Lib
         #region NotImplemented
         public void Close()
         {
+            _logger.LogInformation("XEventStrem called close - not implemented");
             throw new NotImplementedException();
         }
 
         public void Dispose()
         {
+            _logger.LogInformation("XEventStrem called dispose - not implemented");
             throw new NotImplementedException();
         }
 
         public bool GetBoolean(int i)
         {
+            _logger.LogInformation("XEventStrem called getBoolean - not implemented");
+
             throw new NotImplementedException();
         }
 
         public byte GetByte(int i)
         {
+            _logger.LogInformation("XEventStrem called GetByte - not implemented");
+
             throw new NotImplementedException();
         }
 
         public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
         {
+            _logger.LogInformation("XEventStrem called getBytes - not implemented");
+
             throw new NotImplementedException();
         }
 
         public char GetChar(int i)
         {
+            _logger.LogInformation("XEventStrem called getChar - not implemented");
+
             throw new NotImplementedException();
         }
 
         public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
         {
+            _logger.LogInformation("XEventStrem called getChars - not implemented");
+
             throw new NotImplementedException();
         }
 
         public IDataReader GetData(int i)
         {
+            _logger.LogInformation("XEventStrem called getData - not implemented");
+
             throw new NotImplementedException();
         }
 
         public string GetDataTypeName(int i)
         {
+            _logger.LogInformation("XEventStrem called getDateTypeName - not implemented");
+
             throw new NotImplementedException();
         }
 
         public DateTime GetDateTime(int i)
         {
+            _logger.LogInformation("XEventStrem called GetDateTime - not implemented");
+
             throw new NotImplementedException();
         }
 
         public decimal GetDecimal(int i)
         {
+            _logger.LogInformation("XEventStrem called GetDecimal - not implemented");
+
             throw new NotImplementedException();
         }
 
         public double GetDouble(int i)
         {
+            _logger.LogInformation("XEventStrem called getDouble - not implemented");
+
             throw new NotImplementedException();
         }
 
         public Type GetFieldType(int i)
         {
+            _logger.LogInformation("XEventStrem called GetFieldType - not implemented");
+
             throw new NotImplementedException();
         }
 
         public float GetFloat(int i)
         {
+            _logger.LogInformation("XEventStrem called getFloat - not implemented");
+
             throw new NotImplementedException();
         }
 
         public Guid GetGuid(int i)
         {
+            _logger.LogInformation("XEventStrem called GetGuid - not implemented");
+
             throw new NotImplementedException();
         }
 
         public short GetInt16(int i)
         {
+            _logger.LogInformation("XEventStrem called GetInt16 - not implemented");
+
             throw new NotImplementedException();
         }
 
         public int GetInt32(int i)
         {
+            _logger.LogInformation("XEventStrem called GetInt32 - not implemented");
+
             throw new NotImplementedException();
         }
 
         public long GetInt64(int i)
         {
+            _logger.LogInformation("XEventStrem called GetInt64 - not implemented");
+
             throw new NotImplementedException();
         }
 
         public string GetName(int i)
         {
+            _logger.LogInformation("XEventStrem called GetName - not implemented");
+
             throw new NotImplementedException();
         }
 
         public int GetOrdinal(string name)
         {
+            _logger.LogInformation("XEventStrem called GetOrdinal - not implemented");
+
             throw new NotImplementedException();
         }
 
         public DataTable GetSchemaTable()
         {
+            _logger.LogInformation("XEventStrem called GetSchemaTable - not implemented");
+
             throw new NotImplementedException();
         }
 
         public string GetString(int i)
         {
+            _logger.LogInformation("XEventStrem called GetString - not implemented");
+
             throw new NotImplementedException();
         }
 
 
         public int GetValues(object[] values)
         {
+            _logger.LogInformation("XEventStrem called GetValues - not implemented");
+
             throw new NotImplementedException();
         }
 
         public bool NextResult()
         {
+            _logger.LogInformation("XEventStrem called NextResult - not implemented");
+
             throw new NotImplementedException();
         }
 
-        public object this[int i] => throw new NotImplementedException();
-
+        public object this[int i] =>            throw new NotImplementedException();
+    
         public object this[string name] => throw new NotImplementedException();
 
 

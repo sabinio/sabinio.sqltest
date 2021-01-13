@@ -37,7 +37,8 @@ namespace SabinIO.xEvent.App
                 rootCommand.AddOption(new Option<string>("--connection", description: "Connection string"));
                 rootCommand.AddOption(new Option<FileInfo>("--filename", description: "Extended event filename"));
                 rootCommand.AddOption(new Option<int>("--batchsize", getDefaultValue: () => 1000000, description: "Size of batches sent to bulk copy"));
-                rootCommand.AddOption(new Option<string>("--fields", description: "names of fields to load from extended events"));
+                rootCommand.AddOption(new Option<string[]>("--fields", description: "names of fields to load from extended events"));
+                rootCommand.AddOption(new Option<string[]>("--columns", getDefaultValue: () => new string[0] ,description: "names of columns in the target table to load")); ;
                 rootCommand.AddOption(new Option<string>("--logFile", description: "name of log file"));
                 rootCommand.AddOption(new Option<bool>("--debug", getDefaultValue: () => false, description: "outputs debug information to the standard out"));
                 rootCommand.AddOption(new Option<int>("--logLevel", getDefaultValue: () => -1, description: "outputs debug information to the standard out"));
@@ -79,7 +80,7 @@ namespace SabinIO.xEvent.App
             catch (Exception ex)
             {
 
-                Log.Fatal(ex, "An unhandled exception occurred.");
+                Log.Error(ex, "An unhandled exception occurred.");
                 return -1;
             }
             finally
@@ -116,15 +117,16 @@ namespace SabinIO.xEvent.App
      {
 
          var Option = host.Services.GetRequiredService<IOptions<XEventAppOptions>>().Value;
-         var (batchsize, tablename, connection, fields, filename, debug, logLevel, progress) = Option; 
+         var (batchsize, tablename, connection, fields, filename, debug, logLevel, progress, columns) = Option; 
 
          Log.Information("The value for --batchsize is: {batchsize}", batchsize);
          Log.Information($"    --filename is: {filename?.FullName ?? "null"}");
-        Log.Information($"    --connection is: {connection}");
-        Log.Information($"    --table is: {tablename}");
-        Log.Information($"    --fields is: {fields}");
-        Log.Information($"    --batchsize is: {batchsize}");
-        Log.Information($"    --progress is: {progress}");
+         Log.Information($"    --connection is: {connection}");
+         Log.Information($"    --table is: {tablename}");
+         Log.Information($"    --fields are: {String.Join(",",fields)}");
+         Log.Information($"    --columns are: {String.Join(",", columns)}");
+         Log.Information($"    --batchsize is: {batchsize}");
+         Log.Information($"    --progress is: {progress}");
          Log.Information($"    --logLevel is: {logLevel}");
          
          XEFileReader eventStream = host.Services.GetRequiredService<XEFileReader>();
@@ -139,7 +141,7 @@ namespace SabinIO.xEvent.App
          {
              Stopwatch sw = new Stopwatch();
              sw.Start();
-             var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields?.Split(","), cancelToken);
+             var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields, columns,cancelToken);
              sw.Stop();
              if (cancelToken.IsCancellationRequested) { Log.Information("Processing aborted due to cancellation request, Numbers below are rows processed so far"); }
              Log.Information($"rows read        {rowsread}");
@@ -150,10 +152,8 @@ namespace SabinIO.xEvent.App
          catch (Exception ex)
          {
              
-            Log.Error(ex,$"Error occurred processing the file {filename.FullName}\n {ex.Message}");
-             throw;
-
-         }
+            Log.Fatal($"Error occurred processing the file {filename.FullName}\n {ex.Message}");
+               }
      }
      );
 
@@ -167,7 +167,8 @@ namespace SabinIO.xEvent.App
         public int batchsize { get; set; }
         public string tablename { get; set; }
         public string connection { get; set; }
-        public string fields { get; set; }
+        public string[] fields { get; set; }
+        public string[] columns { get; set; }
         public FileInfo filename { get; set; }
         public bool debug { get; set; }
         public int logLevel { get; set; }
@@ -175,8 +176,27 @@ namespace SabinIO.xEvent.App
 
 #pragma warning restore IDE1006 // Naming Styles
 
-        public void Deconstruct(out int batchsize, out string tablename, out string connection, out string fields, out FileInfo filename, out bool debug, out int logLevel, out int progress)
-        { batchsize = this.batchsize; tablename = this.tablename; connection = this.connection; fields = this.fields; filename = this.filename; debug = this.debug; logLevel = this.logLevel; progress = this.progress; }
+        public void Deconstruct(
+            out int batchsize, 
+            out string tablename, 
+            out string connection, 
+            out string[] fields, 
+            out FileInfo filename, 
+            out bool debug, 
+            out int logLevel, 
+            out int progress,
+            out string[] columns)
+        { 
+            batchsize = this.batchsize; 
+            tablename = this.tablename; 
+            connection = this.connection; 
+            fields = this.fields; 
+            filename = this.filename; 
+            debug = this.debug; 
+            logLevel = this.logLevel; 
+            progress = this.progress;
+            columns = this.columns;
+        }
     }
 
 

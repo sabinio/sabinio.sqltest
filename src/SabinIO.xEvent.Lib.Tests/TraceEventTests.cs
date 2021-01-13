@@ -77,7 +77,7 @@ namespace SabinIO.xEvent.Lib.Tests
             eventStream.connection = "data source=.;Trusted_Connection=True;initial catalog=test";
             eventStream.tableName = "trace";
             
-            var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(new string[] { "page_faults", "cpu_time", "sql_text", "duration" },new System.Threading.CancellationToken());
+            var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(new string[] { "page_faults", "cpu_time", "sql_text", "duration" },new string[] { },new System.Threading.CancellationToken());
 
             Assert.That(rowsread, Is.EqualTo(rowsinserted));
             Assert.That(rowsread, Is.Not.EqualTo(0));

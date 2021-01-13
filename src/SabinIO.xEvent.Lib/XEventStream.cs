@@ -3,6 +3,7 @@ using Microsoft.SqlServer.XEvent.XELite;
 using System;
 using System.Collections.Concurrent;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SabinIO.xEvent.Lib
@@ -16,7 +17,7 @@ namespace SabinIO.xEvent.Lib
 
         int readposition = -1;
         private string[] _fieldList;
-        public string[] fields { get { return _fieldList; } set { _fieldList = value; } }
+        public string[] fields { get { return _fieldList; } set { _fieldList = value.Select(_ => _.ToLower()).ToArray(); } }
 
         public bool finishedLoading { set { _Q.CompleteAdding(); } }
         IXEvent CurrentItem;
@@ -66,17 +67,17 @@ namespace SabinIO.xEvent.Lib
         }
         public object GetValue(int i)
         {
-
-            switch (i)
+            string field = _fieldList[i];
+            switch (field)
             {
-                case 1:
+                case "uuid":
                     return CurrentItem.UUID;
-                case 2:
+                case "event_name":
                     return CurrentItem.Name;
-                case 3:
+                case "timestamp":
                     return CurrentItem.Timestamp;
                 default:
-                    string field = _fieldList[i - 4];
+                    
                     if (CurrentItem.Fields.ContainsKey(field))
                     {
                         return CurrentItem.Fields[field];
@@ -94,7 +95,7 @@ namespace SabinIO.xEvent.Lib
 
         public int Count { get { return _count; } }
 
-        public int FieldCount { get { return 4 + _fieldList.Length; } }
+        public int FieldCount { get { return  _fieldList.Length; } }
 
 
         public bool IsDBNull(int i)
@@ -238,9 +239,13 @@ namespace SabinIO.xEvent.Lib
 
         public int GetOrdinal(string name)
         {
-            _logger.LogInformation("XEventStrem called GetOrdinal - not implemented");
+            
+            for (int i = 0; i < _fieldList.Length; i++)
+            {
+                if (_fieldList[i] == name) return i;
+            }
 
-            throw new NotImplementedException();
+            throw new Exception ($"Field {name} not found in --fields {String.Join(",",_fieldList)}")  ;
         }
 
         public DataTable GetSchemaTable()

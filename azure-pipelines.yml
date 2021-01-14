@@ -90,7 +90,6 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: 'current'
-              artifactName: 'xEventApp'
               targetPath: '$(Build.ArtifactStagingDirectory)'
 
           - task: GitHubRelease@1
@@ -101,7 +100,7 @@ stages:
               target: '$(Build.SourceVersion)'
               tag: '0.0.1-beta'
               title: 'Beta'
-              assets: '$(Build.ArtifactStagingDirectory)/SabinIO.xEvent.App/*'
+              assets: '$(Build.ArtifactStagingDirectory)/SabinIO.xEvent.App*/*'
               assetUploadMode: 'replace'
               isPreRelease: true
               addChangeLog: false

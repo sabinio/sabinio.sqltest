@@ -1495,7 +1495,7 @@
           "Microsoft.SqlServer.XEvent.XELite": "2020.11.19.1"
         }
       },
-      "XEvent": {
+      "XEvent.": {
         "type": "Project",
         "dependencies": {
           "SabinIO.xEvent.Lib": "1.0.0",

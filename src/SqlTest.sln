@@ -17,6 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.SqlTest.Tests", "Sa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D8099C3D-691E-4901-911E-2FCF245BAB76}"
 	ProjectSection(SolutionItems) = preProject
+		..\azure-pipelines.yml = ..\azure-pipelines.yml
 		..\Readme.md = ..\Readme.md
 	EndProjectSection
 EndProject

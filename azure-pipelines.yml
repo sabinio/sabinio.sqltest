@@ -29,6 +29,7 @@ stages:
         version: '5.x'
         performMultiLevelLookup: true
       enabled: false
+
     - task: DotNetCoreCLI@2
       inputs:
         command: 'restore'
@@ -53,7 +54,26 @@ stages:
         command: 'publish'
         publishWebProjects: false
         projects: '**/SabinIO.xEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r linux-x64'
+        zipAfterPublish: false
+        modifyOutputPath: true
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: '**/SabinIO.xEvent.App.csproj'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r win-x64'
+        zipAfterPublish: false
+        modifyOutputPath: true
+
+        
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: '**/SabinIO.xEvent.App.csproj'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r osx-x64'
         zipAfterPublish: false
         modifyOutputPath: true
 

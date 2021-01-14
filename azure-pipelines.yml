@@ -8,11 +8,11 @@ variables:
   NUGET_PACKAGES: $(build.SourcesDirectory)\packages
   platforms: 
     linux:
-      platform: linux-x64
+      TargetPlatform: linux-x64
     windows:
-      platform: win-x64
+      TargetPlatform: win-x64
     osx:
-      platform: osx-x64
+      TargetPlatform: osx-x64
 
 stages:
 - stage: build
@@ -34,6 +34,7 @@ stages:
       displayName: Cache Nuget packages
       
     - task: UseDotNet@2
+      displayName: Use Dot version
       inputs:
         packageType: 'sdk'
         version: '5.x'
@@ -41,12 +42,14 @@ stages:
       enabled: false
 
     - task: DotNetCoreCLI@2
+      displayName: Restore Nuget Packages
       inputs:
         command: 'restore'
         projects: '**/*.sln'
         verbosityRestore: 'Normal'
 
     - task: DotNetCoreCLI@2
+      displayName: Build
       inputs:
         command: 'build'
         projects: '**/*.sln'
@@ -54,17 +57,19 @@ stages:
         includeNuGetOrg: true
 
     - task: VSTest@2
+      displayName: Test
       inputs:
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
 
         
     - task: DotNetCoreCLI@2
+      displayName: dotnet publish
       inputs:
         command: 'publish'
         publishWebProjects: false
         projects: '**/SabinIO.xEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(platform)'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(TargetPlatform)'
         zipAfterPublish: false
         modifyOutputPath: true
 

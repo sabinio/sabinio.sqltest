@@ -25,10 +25,10 @@ stages:
     steps:
     - task: Cache@2
       inputs:
-        key: 'nuget | "$(platform)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+        key: 'nuget | "$(TargetPlatform)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
         path: '$(NUGET_PACKAGES)'
         restoreKeys: |
-          nuget | "$(platform)"
+          nuget | "$(TargetPlatform)"
           nuget
       displayName: Cache Nuget packages
       
@@ -75,7 +75,7 @@ stages:
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
-        artifactName: XEventApp
+        artifactName: XEventApp$(TargetPlatform)
 
 - stage: PublishToGitHub
   jobs: 
@@ -89,7 +89,6 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: 'current'
-              artifactName: 'xEventApp'
               targetPath: '$(Build.ArtifactStagingDirectory)'
 
           - task: GitHubRelease@1
@@ -100,7 +99,7 @@ stages:
               target: '$(Build.SourceVersion)'
               tag: '0.0.1-beta'
               title: 'Beta'
-              assets: '$(Build.ArtifactStagingDirectory)/SabinIO.xEvent.App/*'
+              assets: '$(Build.ArtifactStagingDirectory)/SabinIO.xEvent.App*/*'
               assetUploadMode: 'replace'
               isPreRelease: true
               addChangeLog: false

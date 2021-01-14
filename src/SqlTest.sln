@@ -13,7 +13,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.xEvent.Lib", "Sabin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.xEvent.App.Tests", "SabinIO.xEvent.App.Tests\SabinIO.xEvent.App.Tests.csproj", "{69F5131F-365F-4922-862F-F981C6875239}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SabinIO.SqlTest.Tests", "SabinIO.SqlTest.Tests\SabinIO.SqlTest.Tests.csproj", "{14DDA275-6104-4742-A9C0-F07C7E2A7260}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.SqlTest.Tests", "SabinIO.SqlTest.Tests\SabinIO.SqlTest.Tests.csproj", "{14DDA275-6104-4742-A9C0-F07C7E2A7260}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D8099C3D-691E-4901-911E-2FCF245BAB76}"
+	ProjectSection(SolutionItems) = preProject
+		..\Readme.md = ..\Readme.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

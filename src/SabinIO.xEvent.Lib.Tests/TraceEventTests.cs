@@ -79,7 +79,7 @@ namespace SabinIO.xEvent.Lib.Tests
         }
 
         [Test]
-        public async Task TestErrorNotThrownIfColumnNumbersMatchTargetTable()
+        public void TestErrorNotThrownIfColumnNumbersMatchTargetTable()
         {
 
             Assert.Throws<InvalidOperationException>(() =>

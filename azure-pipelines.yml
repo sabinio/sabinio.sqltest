@@ -6,6 +6,7 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   NUGET_PACKAGES: $(build.SourcesDirectory)\packages
+
 stages:
 - stage: build
   pool:
@@ -13,17 +14,27 @@ stages:
 
   jobs:
   - job: BuildAndTest 
+    strategy:
+      matrix:
+        linux:
+          TargetPlatform: linux-x64
+        windows:
+          TargetPlatform: win-x64
+        osx:
+          TargetPlatform: osx-x64
     steps:
     - task: Cache@2
       inputs:
-        key: 'nuget | "$(Agent.OS)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+        key: 'nuget | "$(TargetPlatform)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
         path: '$(NUGET_PACKAGES)'
         restoreKeys: |
-          nuget | "$(Agent.OS)"
+          nuget | "$(TargetPlatform)"
           nuget
       displayName: Cache Nuget packages
-      
+      enabled: false
+
     - task: UseDotNet@2
+      displayName: Use Dot version
       inputs:
         packageType: 'sdk'
         version: '5.x'
@@ -31,12 +42,14 @@ stages:
       enabled: false
 
     - task: DotNetCoreCLI@2
+      displayName: Restore Nuget Packages
       inputs:
         command: 'restore'
         projects: '**/*.sln'
         verbosityRestore: 'Normal'
 
     - task: DotNetCoreCLI@2
+      displayName: Build
       inputs:
         command: 'build'
         projects: '**/*.sln'
@@ -44,45 +57,29 @@ stages:
         includeNuGetOrg: true
 
     - task: VSTest@2
+      displayName: Test
       inputs:
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
 
         
     - task: DotNetCoreCLI@2
+      displayName: dotnet publish
       inputs:
         command: 'publish'
         publishWebProjects: false
         projects: '**/SabinIO.xEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r linux-x64'
-        zipAfterPublish: false
-        modifyOutputPath: true
-
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'publish'
-        publishWebProjects: false
-        projects: '**/SabinIO.xEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r win-x64'
-        zipAfterPublish: false
-        modifyOutputPath: true
-
-        
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'publish'
-        publishWebProjects: false
-        projects: '**/SabinIO.xEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r osx-x64'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(TargetPlatform) -p:PublishSingleFile=true -p:SelfContained=true'
         zipAfterPublish: false
         modifyOutputPath: true
 
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
-        artifactName: XEventApp
+        artifactName: XEventApp$(TargetPlatform)
 
 - stage: PublishToGitHub
+  condition:  eq(variables['Build.SourceBranch'], 'refs/heads/main')
   jobs: 
   - deployment: PublishGitHubReleaseJob
     environment: sqltest_prod
@@ -94,7 +91,6 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: 'current'
-              artifactName: 'xEventApp'
               targetPath: '$(Build.ArtifactStagingDirectory)'
 
           - task: GitHubRelease@1
@@ -105,7 +101,7 @@ stages:
               target: '$(Build.SourceVersion)'
               tag: '0.0.1-beta'
               title: 'Beta'
-              assets: '$(Build.ArtifactStagingDirectory)/SabinIO.xEvent.App/*'
+              assets: '$(Build.ArtifactStagingDirectory)/SabinIO.xEvent.App*/*'
               assetUploadMode: 'replace'
               isPreRelease: true
               addChangeLog: false

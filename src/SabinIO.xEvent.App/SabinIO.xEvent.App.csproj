@@ -5,9 +5,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>XEvent.$(RuntimeIdentifier)</AssemblyName>
     <RootNamespace>XEventConsole.Exe</RootNamespace>
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+   <!-- <SelfContained>true</SelfContained>-->
+   <!-- <RuntimeIdentifier>linux-x64;win-x64</RuntimeIdentifier>-->
     <IncludeSymbolsInSingleFile>True</IncludeSymbolsInSingleFile>
    <!-- <PublishTrimmed>true</PublishTrimmed>-->
    <!-- <PublishReadyToRun>true</PublishReadyToRun>-->

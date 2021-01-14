@@ -17,16 +17,18 @@ Publish Release To GitHub
 ```
 xEventApp 
 ```
+
 |option|input|description|default|
-|-|-|-|
-|**`--tablename`**|`sting`|Name of table load trace into|
-|**`--connection`**|`string`|Connection string of database|
-|**`--filename`**|`string`|Extended event filename full path or relative to the exe|
-|`--batchsize`|`int`|Size of batches sent for each bulk insert for loading clustered column store tables keep this above `102,400` |`1000000`
-|**`--fields`**|`({string}[ ..n])`|Names of fields to load from extended events (either fields or actions). The fields are separated by spaces
-|`--columns`|`({string}[ ..n])`|names of columns in the target table to load, order should map to the order of the fields specified|
-|`--logFile`|`{string}`|name of log file
-|`--debug` |`false|true`|outputs debug information to the standard out, intenal use only|`false`
-|`--logLevel`|`-1|0|1|2|3|4|5|`|outputs debug information to the standard out
-|`--progress`|`int`|how many rows to be moved before notifying of progress|`1000000`
-|`--help`||displays help output
+|-|:-|:-|:-|
+|**`--tablename`**|`string`|Name of table load trace into||
+|**`--connection`**|`string`|Connection string of database||
+|**`--filename`**|`string`|Extended event filename full path or relative to the exe||
+|`--batchsize`|`int`|Size of batches sent for each bulk insert for loading clustered column store tables keep this above `102,400` |`1000000`|
+|**`--fields`**|`({string}[ ..n])`|Names of fields to load from extended events (either fields or actions). The fields are separated by spaces|
+|`--columns`|`({string}[ ..n])`|names of columns in the target table to load, order should map to the order of the fields specified||
+|`--logFile`|`{string}`|name of log file||
+|`--debug` |`false\|true`|outputs debug information to the standard out, intenal use only|`false`|
+|`--logLevel`|`-1|0|1|2|3|4|5|`|outputs debug information to the standard out||
+|`--progress`|`int`|how many rows to be moved before notifying of progress|`1000000`|
+|`--help`||displays help output||
+

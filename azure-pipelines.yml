@@ -6,13 +6,6 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   NUGET_PACKAGES: $(build.SourcesDirectory)\packages
-  platforms: 
-    linux:
-      TargetPlatform: linux-x64
-    windows:
-      TargetPlatform: win-x64
-    osx:
-      TargetPlatform: osx-x64
 
 stages:
 - stage: build
@@ -22,7 +15,13 @@ stages:
   jobs:
   - job: BuildAndTest 
     strategy:
-      matrix : ${{variables.platforms]}
+      matrix:
+        linux:
+          TargetPlatform: linux-x64
+        windows:
+          TargetPlatform: win-x64
+        osx:
+          TargetPlatform: osx-x64
     steps:
     - task: Cache@2
       inputs:

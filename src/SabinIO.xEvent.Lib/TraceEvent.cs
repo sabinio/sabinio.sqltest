@@ -59,10 +59,7 @@ namespace SabinIO.xEvent.Lib
                                     default:
                                         props[ActionName].SetValue(thisEvent, actionValue, null);
                                         break;
-
-
                                 }
-
                             }
                             else
                             {

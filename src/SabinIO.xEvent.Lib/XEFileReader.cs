@@ -131,12 +131,14 @@ namespace SabinIO.xEvent.Lib
             {
                 if (ex.Message == "The given ColumnMapping does not match up with any column in the source or destination.")
                 {
+                    string message;
                     if (_columns.Length == 0)
-                    {
-                        _logger.LogError("The number fields specified doesnt match the target table\n{xeventfields}", String.Join(",", _fields));
-                    }
+                        message = "The number fields specified doesnt match the target table\n{xeventfields}";
                     else
-                        _logger.LogError("Column mappings don't match target table \nTable columns are matched case sensitive, check the columns passed in below are correct\nxEvent fields {xeventfields}\nTable columns {tablecolumns}", String.Join(",", _fields), String.Join(",", _columns));
+                        message = "Column mappings don't match target table \nTable columns are matched case sensitive, check the columns passed in below are correct\nxEvent fields {xeventfields}\nTable columns {tablecolumns}";
+                    
+                    _logger.LogError(message, String.Join(",", _fields), String.Join(",", _columns));
+                    throw new InvalidOperationException(message, ex);
                 }
                 throw;
             }

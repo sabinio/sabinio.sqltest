@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Serilog;
 using System;
@@ -8,6 +9,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml;
+using Dapper;
+using SabinIO.xEvent.Lib;
+using System.Diagnostics;
 
 namespace SabinIO.xEvent.Lib.Tests
 {
@@ -63,22 +67,11 @@ namespace SabinIO.xEvent.Lib.Tests
         [Test]
         public async Task TestXELFileCanBeRead()
         {
-
-            System.Diagnostics.Trace.WriteLine("bugger");
-
-            string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-            var samplexmlfile = Path.Combine(assemblyPath, "sqlother.xel");
-
-
-            XEFileReader eventStream = provider.GetRequiredService<XEFileReader>();
-            //new XEFileReader( new string[] { "page_faults", "cpu_time", "sql_text", "duration" });
-            eventStream.filename = samplexmlfile;
-            eventStream.connection = "data source=.;Trusted_Connection=True;initial catalog=test";
-            eventStream.tableName = "trace";
-            
-            var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(new string[] { "page_faults", "cpu_time", "sql_text", "duration" },new string[] { },new System.Threading.CancellationToken());
-
+            var (rowsread, rowsinserted) = await
+                   SetupFileReader("TestXELFileCanBeRead", tableColumns: "event_name varchar(200), uuid uniqueidentifier")
+                     .ReadAndLoad(new string[] { "event_name","uuid" }, new string[] { }, new System.Threading.CancellationToken())
+                    ;
+                 
             Assert.That(rowsread, Is.EqualTo(rowsinserted));
             Assert.That(rowsread, Is.Not.EqualTo(0));
             TestContext.Write($"rows read        {rowsread}");
@@ -86,10 +79,86 @@ namespace SabinIO.xEvent.Lib.Tests
         }
 
         [Test]
+        public async Task TestErrorNotThrownIfColumnNumbersMatchTargetTable()
+        {
+
+            Assert.Throws<InvalidOperationException>(() =>
+                     SetupFileReader("TestErrorNotThrownIfColumnNumbersMatchTargetTable", tableColumns: "uuid uniqueidentifier null")
+                      .ReadAndLoad(new string[] { "uuid" ,"cpu_time"}, new string[] { }, new System.Threading.CancellationToken())
+                      .GetAwaiter().GetResult()
+                  );
+        }
+
+        [Test]
+        public async Task MappingColumnsWorks()
+        {
+            var (rowsread, rowsinserted) = await SetupFileReader("MappingColumnsWorks", tableColumns: "id uniqueidentifier null,event varchar(100)")
+                      .ReadAndLoad(new string[] { "event_name", "uuid" }, new string[] { "event", "id" }, new System.Threading.CancellationToken());
+            Assert.That(rowsread, Is.EqualTo(rowsinserted));
+            Assert.That(rowsread, Is.Not.EqualTo(0));
+            TestContext.Write($"rows read        {rowsread}");
+            TestContext.Write($"rows bulk loaded {rowsinserted}");
+        }
+
+        [Test]
+        public void TestErrorThrownIfFieldNotInXELFile()
+        {
+            Assert.Throws<InvalidFieldException>(() =>
+               SetupFileReader("TestErrorNotThrownIfColumnNumbersDontMatchTargetTable",tableColumns: "uuid uniqueidentifier null, event_name varchar(100)")
+                .ReadAndLoad(new string[] { "id" }, new string[] { }, new System.Threading.CancellationToken())
+                .GetAwaiter().GetResult()
+            );
+        }
+
+
+        private XEFileReader SetupFileReader(string tablename, string filename= "sql_large.xel", string tableColumns ="")
+        {
+            string connection = "data source=.;Trusted_Connection=True;initial catalog=test";
+
+            string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var samplexmlfile = Path.Combine(assemblyPath, filename);
+
+            XEFileReader eventStream = provider.GetRequiredService<XEFileReader>();
+            eventStream.filename = samplexmlfile;
+            eventStream.connection = connection;
+            eventStream.tableName = tablename;
+
+            var Connection = new SqlConnection(connection);
+            Connection.Query($"drop table if exists {tablename}");
+            Connection.Query($"create table {tablename} ({tableColumns})");
+            return eventStream;
+        }
+
+        [Test]
+        public void TestErrorThrownIfInvalidFieldIsUsed()
+        {
+
+            string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            var samplexmlfile = Path.Combine(assemblyPath, "sql_large.xel");
+            string connection = "data source=.;Trusted_Connection=True;initial catalog=test";
+
+            XEFileReader eventStream = provider.GetRequiredService<XEFileReader>();
+            eventStream.filename = samplexmlfile;
+            eventStream.connection = connection;
+            eventStream.tableName = "TestErrorNotThrownIfColumnNumbersDontMatchTargetTable";
+
+            var Connection = new SqlConnection(connection);
+            Connection.Query("drop table if exists TestErrorNotThrownIfColumnNumbersDontMatchTargetTable");
+            Connection.Query("create table TestErrorNotThrownIfColumnNumbersDontMatchTargetTable (uuid uniqueidentifier null, event_name varchar(100))");
+
+            Assert.Throws<InvalidFieldException>(() =>
+            {
+                eventStream.ReadAndLoad(new string[] { "id" }, new string[] { }, new System.Threading.CancellationToken()).GetAwaiter().GetResult();
+            }
+            );
+        }
+
+
+        [Test]
         public async Task IncompleteFileDoesntError()
         {
-            System.Diagnostics.Trace.WriteLine("bugger");
-
+            
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             var samplexmlfile = Path.Combine(assemblyPath, "truncated.xel");

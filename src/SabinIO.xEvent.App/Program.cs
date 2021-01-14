@@ -76,6 +76,7 @@ namespace SabinIO.xEvent.App
 
                 Log.CloseAndFlush();
                 return await b.InvokeAsync(args).ConfigureAwait(false);
+
             }
             catch (Exception ex)
             {
@@ -98,7 +99,7 @@ namespace SabinIO.xEvent.App
             //.ValueForOption<int>("--logLevel");
             ThisCmd.HasOption("--logLevel");
 
-            config.WriteTo.Console( outputTemplate: "{Message}\n");
+            config.WriteTo.Console( outputTemplate: "{Message}\n",standardErrorFromLevel:LogEventLevel.Error);
 
             var logFile = ThisCmd.ValueForOption<FileInfo>("--logFile");
             if (logFile != null) config.WriteTo.File(logFile.FullName);
@@ -117,18 +118,18 @@ namespace SabinIO.xEvent.App
      {
 
          var Option = host.Services.GetRequiredService<IOptions<XEventAppOptions>>().Value;
-         var (batchsize, tablename, connection, fields, filename, debug, logLevel, progress, columns) = Option; 
+         var (batchsize, tablename, connection, fields, filename, debug, logLevel, progress, columns) = Option;
 
          Log.Information("The value for --batchsize is: {batchsize}", batchsize);
          Log.Information($"    --filename is: {filename?.FullName ?? "null"}");
          Log.Information($"    --connection is: {connection}");
          Log.Information($"    --table is: {tablename}");
-         Log.Information($"    --fields are: {String.Join(",",fields)}");
+         Log.Information($"    --fields are: {String.Join(",", fields)}");
          Log.Information($"    --columns are: {String.Join(",", columns)}");
          Log.Information($"    --batchsize is: {batchsize}");
          Log.Information($"    --progress is: {progress}");
          Log.Information($"    --logLevel is: {logLevel}");
-         
+
          XEFileReader eventStream = host.Services.GetRequiredService<XEFileReader>();
 
          eventStream.filename = filename?.FullName;
@@ -141,19 +142,20 @@ namespace SabinIO.xEvent.App
          {
              Stopwatch sw = new Stopwatch();
              sw.Start();
-             var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields, columns,cancelToken);
+             var (rowsread, rowsinserted) = await eventStream.ReadAndLoad(fields, columns, cancelToken);
              sw.Stop();
              if (cancelToken.IsCancellationRequested) { Log.Information("Processing aborted due to cancellation request, Numbers below are rows processed so far"); }
              Log.Information($"rows read        {rowsread}");
              Log.Information($"rows bulk loaded {rowsinserted}");
-             Log.Information($"rows/ms          {rowsinserted/sw.ElapsedMilliseconds}");
+             Log.Information($"rows/ms          {rowsinserted / sw.ElapsedMilliseconds}");
 
          }
          catch (Exception ex)
          {
-             
-            Log.Fatal($"Error occurred processing the file {filename.FullName}\n {ex.Message}");
-               }
+
+             Log.Error($"Error occurred processing the file {filename.FullName}\n {ex.Message}");
+             //Console.Error(ex.Message);
+         }
      }
      );
 

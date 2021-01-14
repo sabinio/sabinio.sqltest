@@ -77,7 +77,7 @@ namespace SabinIO.xEvent.Lib
                 case "timestamp":
                     return CurrentItem.Timestamp;
                 default:
-                    
+
                     if (CurrentItem.Fields.ContainsKey(field))
                     {
                         return CurrentItem.Fields[field];
@@ -86,13 +86,11 @@ namespace SabinIO.xEvent.Lib
                     {
                         return CurrentItem.Actions[field];
                     }
-                    else return null;
+                    else throw new InvalidFieldException(field);
             }
         }
 
-
-
-
+       
         public int Count { get { return _count; } }
 
         public int FieldCount { get { return  _fieldList.Length; } }

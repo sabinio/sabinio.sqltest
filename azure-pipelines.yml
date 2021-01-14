@@ -105,7 +105,7 @@ stages:
               target: '$(Build.SourceVersion)'
               tag: '0.0.1-beta'
               title: 'Beta'
-              assets: '$(Build.ArtifactStagingDirectory)/**/*.exe'
+              assets: '$(Build.ArtifactStagingDirectory)/SabinIO.xEvent.App/*'
               assetUploadMode: 'replace'
               isPreRelease: true
               addChangeLog: false

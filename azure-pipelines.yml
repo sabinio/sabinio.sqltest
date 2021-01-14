@@ -25,13 +25,14 @@ stages:
     steps:
     - task: Cache@2
       inputs:
-        key: 'nuget | "$(platform)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+        key: 'nuget | "$(TargetPlatform)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
         path: '$(NUGET_PACKAGES)'
         restoreKeys: |
-          nuget | "$(platform)"
+          nuget | "$(TargetPlatform)"
           nuget
       displayName: Cache Nuget packages
-      
+      enabled: false
+
     - task: UseDotNet@2
       displayName: Use Dot version
       inputs:
@@ -68,14 +69,14 @@ stages:
         command: 'publish'
         publishWebProjects: false
         projects: '**/SabinIO.xEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(TargetPlatform)'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(TargetPlatform) -p:PublishSingleFile=true -p:SelfContained=true'
         zipAfterPublish: false
         modifyOutputPath: true
 
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
-        artifactName: XEventApp
+        artifactName: XEventApp$(TargetPlatform)
 
 - stage: PublishToGitHub
   jobs: 

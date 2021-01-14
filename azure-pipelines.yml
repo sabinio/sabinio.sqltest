@@ -22,7 +22,7 @@ stages:
   jobs:
   - job: BuildAndTest 
     strategy:
-      matrix : ${{variables.platforms]}
+      matrix : ${{variables.platforms}}
     steps:
     - task: Cache@2
       inputs:

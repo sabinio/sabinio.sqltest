@@ -6,6 +6,14 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   NUGET_PACKAGES: $(build.SourcesDirectory)\packages
+  platforms: 
+    linux:
+      platform: linux-x64
+    windows:
+      platform: win-x64
+    osx:
+      platform: osx-x64
+
 stages:
 - stage: build
   pool:
@@ -13,13 +21,15 @@ stages:
 
   jobs:
   - job: BuildAndTest 
+    strategy:
+      matrix : ${{variables.platforms]}
     steps:
     - task: Cache@2
       inputs:
-        key: 'nuget | "$(Agent.OS)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+        key: 'nuget | "$(platform)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
         path: '$(NUGET_PACKAGES)'
         restoreKeys: |
-          nuget | "$(Agent.OS)"
+          nuget | "$(platform)"
           nuget
       displayName: Cache Nuget packages
       
@@ -54,26 +64,7 @@ stages:
         command: 'publish'
         publishWebProjects: false
         projects: '**/SabinIO.xEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r linux-x64'
-        zipAfterPublish: false
-        modifyOutputPath: true
-
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'publish'
-        publishWebProjects: false
-        projects: '**/SabinIO.xEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r win-x64'
-        zipAfterPublish: false
-        modifyOutputPath: true
-
-        
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'publish'
-        publishWebProjects: false
-        projects: '**/SabinIO.xEvent.App.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r osx-x64'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(platform)'
         zipAfterPublish: false
         modifyOutputPath: true
 

@@ -79,7 +79,7 @@ stages:
         artifactName: XEventApp$(TargetPlatform)
 
 - stage: PublishToGitHub
-  condition:  eq(variables['Build.SourceBranch'], 'refs/heads/main')
+  condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
   jobs: 
   - deployment: PublishGitHubReleaseJob
     environment: sqltest_prod

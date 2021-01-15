@@ -86,6 +86,9 @@ namespace SabinIO.xEvent.Lib
                     {
                         return CurrentItem.Actions[field];
                     }
+                    else if (field.StartsWith('{')) {
+                        return field[1..^1];
+                    }
                     else throw new InvalidFieldException(field);
             }
         }

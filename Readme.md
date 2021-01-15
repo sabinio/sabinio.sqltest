@@ -24,8 +24,8 @@ xEventApp
 |**--connection**|`string`|Connection string of database||
 |**--filename**|`string`|Extended event filename full path or relative to the exe||
 |--batchsize|`int`|Size of batches sent for each bulk insert for loading clustered column store tables keep this above `102,400` |`1000000`|
-|**--fields**|`string[ ..n]`|Names of fields to load from extended events (either fields or actions). The fields are separated by spaces|
-|--columns|`string[ ..n]`|names of columns in the target table to load, order should map to the order of the fields specified||
+|**--fields**|`string|{constant}[ ..n]`|Names of fields to load from extended events (either fields or actions) or a constant. Constants are defined by wrapping value in {}.<br> The fields are separated by spaces|
+|--columns|`string|[ ..n]`|names of columns in the target table to load, order should map to the order of the fields specified||
 |--logFile|`string`|name of log file||
 |--debug|`false\|true`|outputs debug information to the standard out, intenal use only|`false`|
 |--logLevel|`-1\|0\|1\|2\|3\|4\|5`|outputs debug information to the standard out||

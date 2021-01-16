@@ -33,11 +33,11 @@ namespace SabinIO.xEvent.App
                 {
                     Handler = Handler
                 };
-                rootCommand.AddOption(new Option<string>("--tablename", description: "Tablename to load trace into"));
+                rootCommand.AddOption(new Option<string>("--tablename", description: "Tablename to load trace into") );
                 rootCommand.AddOption(new Option<string>("--connection", description: "Connection string"));
                 rootCommand.AddOption(new Option<FileInfo>("--filename", description: "Extended event filename"));
                 rootCommand.AddOption(new Option<int>("--batchsize", getDefaultValue: () => 1000000, description: "Size of batches sent to bulk copy"));
-                rootCommand.AddOption(new Option<string[]>("--fields", description: "names of fields to load from extended events"));
+                rootCommand.AddOption(new Option<string[]>("--fields", description: "names of fields to load from extended events, constants can be inluded by wrapping in {}"));
                 rootCommand.AddOption(new Option<string[]>("--columns", getDefaultValue: () => new string[0] ,description: "names of columns in the target table to load")); ;
                 rootCommand.AddOption(new Option<string>("--logFile", description: "name of log file"));
                 rootCommand.AddOption(new Option<bool>("--debug", getDefaultValue: () => false, description: "outputs debug information to the standard out"));

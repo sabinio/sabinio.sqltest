@@ -15,7 +15,12 @@ Publish Release To GitHub
 
 
 ```
-xEventApp 
+xEventApp --tablename string --connection string --filename string --batchsize int --fields string|{constant}[ ..n] --columns string[ ..n] --progress int 
+
+string = a string value
+int    = an integer value
+|      = choice of different type of arguments
+[ ..n] = repeating argument i.e. --fields cpu_time page_faults session_id 
 ```
 
 |-|option|input|description|default|

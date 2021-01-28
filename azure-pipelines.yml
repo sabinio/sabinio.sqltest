@@ -1,6 +1,9 @@
 
 trigger:
 - master
+pr:
+- master
+
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
@@ -101,7 +104,7 @@ stages:
               target: '$(Build.SourceVersion)'
               tag: '0.0.1-beta'
               title: 'Beta'
-              assets: '$(Build.ArtifactStagingDirectory)/SabinIO.xEvent.App*/*'
+              assets: '$(Build.ArtifactStagingDirectory)/**/*'
               assetUploadMode: 'replace'
               isPreRelease: true
               addChangeLog: false

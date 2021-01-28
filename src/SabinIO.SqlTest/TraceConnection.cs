@@ -38,7 +38,7 @@ namespace SabinIO.SqlTest
                 
 
                 var packageEvents = new List<(string package, List<string> events)>(){
-                            ("sqlserver", new List<string> { "sql_batch_starting", "sql_statement_completed" })
+                            ("sqlserver", new List<string> { "sql_batch_starting", "sql_statement_completed","sql_batch_completed" })
                         };
 
                 var packageActions = new List<(string package, List<string> actions)>
@@ -89,7 +89,7 @@ namespace SabinIO.SqlTest
              return Connection.QuerySingle<T>(cmd);
 
         }
-        public IEnumerable<(string name ,Dictionary<string,string> actions)> Statements()
+        public IEnumerable<(string name ,Dictionary<string,string> actions, Dictionary<string, string> fields)> Statements()
         {
             // Stream s= new MemoryStream();
             using (MonitorConnection = new SqlConnection(ConnectionStr))
@@ -110,7 +110,8 @@ WHERE xe.name = '{XEventSessionName}'
                 XElement eventXml = XElement.Load(s);
                 var x = from ev in eventXml.Descendants("event")
                         select (name: ev.Attribute("name").Value,
-                                actions: ev.Elements("action").Select(act => (name: act.Attribute("name").Value, value: act.Element("value").Value)).ToDictionary(_ => _.name, _ => _.value)
+                                actions: ev.Elements("action").Select(act => (name: act.Attribute("name").Value, value: act.Element("value").Value)).ToDictionary(_ => _.name, _ => _.value),
+                                fields: ev.Elements("data").Select(act => (name: act.Attribute("name").Value, value: act.Element("value").Value)).ToDictionary(_ => _.name, _ => _.value)
                                   );
 
                 return x;

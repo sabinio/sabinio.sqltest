@@ -24,15 +24,14 @@ namespace SabinIO.SqlTest.Tests
             using var TestConnection = new TracedConnection() { ConnectionStr = "data source=.;Trusted_Connection=True" };
             var result = TestConnection.Execute<string>("select 'Simon'");
 
-            //            Task.WaitAll( result);
             Assert.That(() => result == "Simon");
 
             TestConnection.Connection.Query("select @@version");
 
 
             var results = TestConnection.Statements().ToList();
-
-            Assert.That(() => results.Where(_ => _.name == "sql_statement_completed" && _.actions["sql_text"] == "select 'Simon'").Any());
+            
+            Assert.That(results.Where(_ => _.name == "sql_statement_completed").Select(_=> _.actions["sql_text"]),Is.SupersetOf(new string[] { "select 'Simon'" }));
 
         }
 
@@ -47,30 +46,9 @@ namespace SabinIO.SqlTest.Tests
 
             var tokenSource2 = new CancellationTokenSource();
             CT = tokenSource2.Token;
-            //                var Trace = samplexml.ReadEventStream(foo, CT);
             List<IXEvent> bob = new List<IXEvent>();
 
-            //var Trace = new Thread(async () =>
-            //{
-            //    try
-            //    {
-            //        await samplexml.ReadEventStream(
-            //       evt =>
-            //       {
-            //           TestContext.WriteLine($"Logging Event {evt.Name}");
-            //           bob.Add(evt);
-            //           return Task.CompletedTask;
-            //       }, CancellationToken.None);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //       // throw;
-            //    }
-            //});
-            //Trace.Name = "simon";
-            //Trace.Priority = ThreadPriority.AboveNormal;           //                var Trace = samplexml.ReadEventStream(x => { return new Task(() => { bob.Add(x); }); }, CT);
-            //Trace.Start();
-            Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId }");
+           Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId }");
 
             var TraceReader = Task.Run(async ()=> await samplexml.ReadEventStream(
                  evt =>
@@ -88,18 +66,16 @@ namespace SabinIO.SqlTest.Tests
             
             Assert.That(() => result == "Simon");
             T.Connection.Query("select @@version");
-            //T.StopTrace();
-
+            
             Stopwatch sw = new Stopwatch();
             sw.Start();
- //           while (sw.ElapsedMilliseconds < 10000)
-   //         {
+            while (sw.ElapsedMilliseconds < 10000)
+            {
                 await Task.Delay(1000);
-     //       }
+            }
             sw.Stop();
-            Assert.That(bob, Has.Count.EqualTo(4));
-          //  tokenSource2.Cancel();
-            // Assert.That(() => results.Where(_ => _.name == "sql_statement_completed" && _.actions["sql_text"] == "select 'Simon'").Any());
+            Assert.That(bob, Has.Count.EqualTo(6));
+            Assert.That(() => bob.Where(_ => _.Name == "sql_statement_completed" && ((string)_.Actions["sql_text"]).StartsWith("select 'Simon'")).Any());
 
 
 

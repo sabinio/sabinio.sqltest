@@ -3,6 +3,7 @@ using Microsoft.SqlServer.TransactSql.ScriptDom;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text;
 using static SabinIO.Sql.Parse;
 
@@ -12,63 +13,83 @@ namespace SabinIO.Sql
     public class ParamVisitor: TSqlFragmentVisitor
     {
         public readonly Dictionary<string,TVPParameter> Parameters = new Dictionary<String, TVPParameter>();
-       
-        public override void Visit(InsertStatement node)
+
+        public override void Visit(TSqlStatement node)
         {
 
             DeclareTableVariableStatement t;
-            var x = node.InsertSpecification;
-            if (x.Target is VariableTableReference y)
+            switch (node)
             {
-                string VariableName = y.Variable.Name;
-
-                if (!Parameters.ContainsKey(VariableName))
-                {
-                    Parameters.Add(VariableName, new TVPParameter() { Name = VariableName });
-                }
-                if (x.InsertSource is ValuesInsertSource insertStatement)
-                {
-                    //only work out types on the first pass
-                    if (Parameters[VariableName].Types.Count == 0)
+                case InsertStatement insStmt:
+                    var x = insStmt.InsertSpecification;
+                    if (x.Target is VariableTableReference y)
                     {
-                       
-                        foreach (var c in insertStatement.RowValues[0].ColumnValues)
-                        {
-                            switch (c)
-                            {
-                                case StringLiteral L:
-                                    Parameters[VariableName].Types.Add(L.LiteralType.ToString());
-                                    Parameters[VariableName].RowValues.Columns.Add().DataType = typeof(string);
-                                    break;
-                                case IntegerLiteral L:
-                                    Parameters[VariableName].Types.Add(L.LiteralType.ToString());
-                                    Parameters[VariableName].RowValues.Columns.Add().DataType = typeof(int);
-                                    break;
-                                case BinaryLiteral L:
-                                    Parameters[VariableName].Types.Add(L.LiteralType.ToString());
-                                    Parameters[VariableName].RowValues.Columns.Add().DataType = typeof(byte);
-                                    break;
-                                default:
-                                    Parameters[VariableName].Types.Add("unknown");
-                                    Parameters[VariableName].RowValues.Columns.Add().DataType = typeof(object);
-                                    break;
+                        string VariableName = y.Variable.Name;
 
+                        if (!Parameters.ContainsKey(VariableName))
+                        {
+                            Parameters.Add(VariableName, new TVPParameter() { Name = VariableName });
+                        }
+                        if (x.InsertSource is ValuesInsertSource insertStatement)
+                        {
+                            //only work out types on the first pass
+                            if (Parameters[VariableName].Types.Count == 0)
+                            {
+
+                                foreach (var c in insertStatement.RowValues[0].ColumnValues)
+                                {
+                                    switch (c)
+                                    {
+                                        case StringLiteral L:
+                                            Parameters[VariableName].Types.Add(L.LiteralType.ToString());
+                                            Parameters[VariableName].RowValues.Columns.Add().DataType = typeof(string);
+                                            break;
+                                        case IntegerLiteral L:
+                                            Parameters[VariableName].Types.Add(L.LiteralType.ToString());
+                                            Parameters[VariableName].RowValues.Columns.Add().DataType = typeof(int);
+                                            break;
+                                        case BinaryLiteral L:
+                                            Parameters[VariableName].Types.Add(L.LiteralType.ToString());
+                                            Parameters[VariableName].RowValues.Columns.Add().DataType = typeof(byte);
+                                            break;
+                                        default:
+                                            Parameters[VariableName].Types.Add("unknown");
+                                            Parameters[VariableName].RowValues.Columns.Add().DataType = typeof(object);
+                                            break;
+
+                                    }
+                                }
+                            }
+
+                            foreach (var row in insertStatement.RowValues)
+                            {
+
+                                var tableRow = Parameters[VariableName].RowValues.NewRow();
+
+                                for (int i = 0; i < row.ColumnValues.Count; i++)
+                                {
+                                    tableRow[i] = (row.ColumnValues[i] as Literal).Value;
+                                }
+                                Parameters[VariableName].RowValues.Rows.Add(tableRow);
                             }
                         }
                     }
-
-                    foreach (var row in insertStatement.RowValues)
+                    break;
+                case DeclareVariableStatement decl:
+                    foreach (var d in decl.Declarations)
                     {
-
-                        var tableRow = Parameters[VariableName].RowValues.NewRow();
-
-                        for (int i = 0; i < row.ColumnValues.Count; i++)
+                        //only TVPs have a schema identifier???
+                        if (d.DataType.Name.SchemaIdentifier!=null)
                         {
-                            tableRow[i] = (row.ColumnValues[i] as Literal).Value;
+                            var vname = d.VariableName.Value;
+                            if (!Parameters.ContainsKey(vname))
+                            {
+                                Parameters.Add(vname, new TVPParameter() { Name = vname });
+                            }
+                            Parameters[vname].Type = String.Join('.', d.DataType.Name.Identifiers.Select(s => s.Value));
                         }
-                        Parameters[VariableName].RowValues.Rows.Add(tableRow);
                     }
-                }
+                    break;
             }
             base.Visit(node);
         }

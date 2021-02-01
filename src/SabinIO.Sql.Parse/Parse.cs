@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 
@@ -16,28 +17,83 @@ namespace SabinIO.Sql
             var stmt = GetStatement(sql);
             var c = new SqlCommand();
             c.CommandText = stmt.statement;
-
+            if (stmt.isProc)
+            {
+                c.CommandType = CommandType.StoredProcedure;
+            }
             foreach (var SqlParam in stmt.parameters.Values)
             {
-                switch (SqlParam.Type.ToLower())
+
+                SqlParameter p = new SqlParameter();
+                p.ParameterName = SqlParam.Name;
+                p.Size = SqlParam.length;
+                p.Scale = SqlParam.Scale;
+                c.Parameters.Add(p);
+                if (SqlParam.Value == null)
                 {
-                    case "int":
-                        c.Parameters.Add(SqlParam.Name, SqlDbType.Int).Value = SqlParam.Value;
-                        break;
+                    p.Value = DBNull.Value;
+                }
+                else { p.Value = SqlParam.Value; }
+                switch (SqlParam.Type?.ToLower())
+                {
                     case "varchar":
-                        throw new Exception("not supported");
+                    case "nvarchar":
+
+                    case "binary":
+                    case "datetime":
+                    case "tinyint":
+                    case "smallint":
+                    case "int":
+                    case "bigint":
+                    case "varbinary":
+                    case "decimal":
+                    case "float":
+                        p.SqlDbType = Enum.Parse<SqlDbType>(SqlParam.Type, true);
+                        break;
+                    case "numeric":
+                        p.SqlDbType = SqlDbType.Decimal;
+                        break;
+                    case "bit":
+                        p.SqlDbType = SqlDbType.Bit;
+                        p.Value = SqlParam.Value == "1";
+                        break;
+                    case "variable":
+                        //This is when we have output parameters
+                        //Assume int until we load proc parameters types from DB
+                        if (TVPs.ContainsKey(SqlParam.Value))
+                        {
+                            p.SqlDbType = SqlDbType.Structured;
+                            p.TypeName = TVPs[SqlParam.Value].Type;
+                            p.Value = TVPs[SqlParam.Value].RowValues;
+                        }
+                        else
+                        {
+                            p.SqlDbType = SqlDbType.Int;
+                        }
+                        break;
                     default:
-                        var tvp = c.CreateParameter();
-                        tvp.ParameterName = SqlParam.Name;
-                        tvp.SqlDbType = SqlDbType.Structured;
-                        tvp.TypeName = $"dbo.{SqlParam.Type}";
-                        tvp.Value = TVPs[SqlParam.Value].RowValues;
-
-
-                        c.Parameters.Add(tvp);
-                        //assume TVP
+                        if (SqlParam.Value == null)
+                        {
+                            //Assume an int
+                            p.SqlDbType = SqlDbType.Int;
+                            p.Value = DBNull.Value;
+                        }
+                   
+                        else
+                        {
+                            throw new NotSupportedException($"{SqlParam.Name}-{SqlParam.Type}");
+                        }
                         break;
                 }
+                if (SqlParam.isOutput)
+                {
+                    p.Direction = ParameterDirection.Output;
+                    //this is defaulted to int but not all output params will be int
+                    p.SqlDbType = SqlDbType.Int;
+                }
+
+
+
             }
             return c;
         }
@@ -65,7 +121,7 @@ namespace SabinIO.Sql
 
         }
 
-        public static (string statement, Dictionary<string,Parameter> parameters) GetStatement(string query)
+        public static Batch GetStatement(string query)
         {
             using (var rdr = new StringReader(query))
             {
@@ -76,18 +132,29 @@ namespace SabinIO.Sql
 
                 if (errors.Count > 0)
                 {
-                    throw new AggregateException(errors.Select(e => new SyntaxErrorException($"{e.Message} Line {e.Line},{e.Column}")));
+                    throw ParseException.CreateSingleOrAggregate(errors);
                 }
-                var p = new StatementVisitor();
+                var p = new StatementVisitor(parser);
                 tree.Accept(p);
-                return (p.statement,p.Parameters);
+                return new Batch() { statement = p.statement,isProc=p.isProc, parameters = p.Parameters };
             }
         }
     }
       
 
         public class ParseException:SyntaxErrorException{
-            
+        public ParseException(ParseError error):base($"{error.Message} Line {error.Line},{error.Column}") { }
+        public static Exception CreateSingleOrAggregate(IList<ParseError> errors)
+        {
+            if (errors.Count > 1)
+            {
+                return new AggregateException(errors.Select(e => new ParseException(e)));
+            }
+            else
+            {
+                return new ParseException(errors[0]);
+            }
         }
+    }
 
 }

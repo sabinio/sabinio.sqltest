@@ -16,12 +16,13 @@ namespace SabinIO.SqlTest.Tests
     [TestFixture]
         public class TracedConnectionTests
     {
- 
+ public string connectionString { get { return TestContext.Parameters["TraceConnectionString"]; } }
+
         [TestCase]
         public void CanReadStatementsForSession()
         {
 
-            using var TestConnection = new TracedConnection() { ConnectionStr = "data source=.;Trusted_Connection=True" };
+            using var TestConnection = new TracedConnection() { ConnectionStr = connectionString };
             var result = TestConnection.Execute<string>("select 'Simon'");
 
             Assert.That(() => result == "Simon");
@@ -40,7 +41,7 @@ namespace SabinIO.SqlTest.Tests
         [TestCase]
         public async Task  LiveStreamCapturesTheEvents()
         {
-            using var T = new TracedConnection() { ConnectionStr = "data source=.;Trusted_Connection=True" };
+            using var T = new TracedConnection() { ConnectionStr = connectionString };
             T.Init();
             var samplexml = new XELiveEventStreamer($"{T.ConnectionStr};Application Name=Trace" , T.XEventSessionName);
 

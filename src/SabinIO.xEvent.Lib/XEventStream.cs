@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SabinIO.xEvent.Lib
@@ -14,7 +15,7 @@ namespace SabinIO.xEvent.Lib
         private int _count = 0;
         private readonly BlockingCollection<IXEvent> _Q;
         //        private List<IXEvent> _list;
-
+        public CancellationToken CancelToken;
         int readposition = -1;
         private string[] _fieldList;
         public string[] fields { get { return _fieldList; } set { _fieldList = value.Select(_ => _.ToLower()).ToArray(); } }
@@ -52,7 +53,7 @@ namespace SabinIO.xEvent.Lib
                 return false;
             }
             else {
-                CurrentItem = _Q.Take();
+                CurrentItem = _Q.Take(CancelToken);
                 readposition++;
                 return true;
             }

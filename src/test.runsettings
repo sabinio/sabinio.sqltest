@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+	<!-- Configurations that affect the Test Framework -->
+	<RunConfiguration>
+		<MaxCpuCount>1</MaxCpuCount>
+	</RunConfiguration>
+
+	<!-- Configurations for data collectors -->
+	<DataCollectionRunSettings>
+
+	</DataCollectionRunSettings>
+
+	<!-- Parameters used by tests at run time -->
+	<TestRunParameters>
+		<Parameter name="ConnectionString" value="data source=.;initial catalog=AltoNew;user=sa;password=SimonIsGreat123" />
+		<Parameter name="TraceConnectionString" value="data source=.;initial catalog=AltoTraceAnalysis;user=sa;password=SimonIsGreat123" />
+	</TestRunParameters>
+
+	<!-- Configuration for loggers -->
+	<LoggerRunSettings>
+		<Loggers>
+			<Logger friendlyName="console" enabled="True">
+				<Configuration>
+					<Verbosity>quiet</Verbosity>
+				</Configuration>
+			</Logger>
+		</Loggers>
+	</LoggerRunSettings>
+
+	<!-- Adapter Specific sections -->
+
+</RunSettings>

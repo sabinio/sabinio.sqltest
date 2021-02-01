@@ -11,6 +11,10 @@ namespace XEvent.App.Tests
 {
     public class AppTests
     {
+
+        public string connectionString { get { return TestContext.Parameters["TraceConnectionString"]; } }
+
+
         [SetUp]
         public void Setup()
         {
@@ -29,7 +33,7 @@ namespace XEvent.App.Tests
             var result = Program.Main(new string[] {
                     "--batchsize","10000",
                     "--tablename","Trace",
-                    "--connection", "data source=.;Trusted_Connection=True;initial catalog=test",
+                    "--connection", connectionString,
                     "--filename", samplexmlfile,
                     "--fields",string.Join(",",new string[] { "page_faults", "cpu_time", "sql_text", "duration" }) }).GetAwaiter().GetResult();
             sw.Flush();
@@ -45,7 +49,7 @@ namespace XEvent.App.Tests
 
         }
         [Test]
-        public void AppThrowsExceptionWhenTableDoesntExists()
+        public async Task AppThrowsExceptionWhenTableDoesntExists()
         {
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -54,13 +58,15 @@ namespace XEvent.App.Tests
             using var sw = new StreamWriter(ErrorStream);
             Console.SetError(sw);
 
-            Program.Main(new string[] {
+            var RunExe = Program.Main(new string[] {
                     "--batchsize","10000",
                     "--tablename","Foo",
-                    "--connection", "data source=.;Trusted_Connection=True;initial catalog=test",
+                    "--connection", connectionString,
                     "--filename", samplexmlfile,
-                    "--fields",string.Join(",",new string[] { "page_faults", "cpu_time", "sql_text", "duration" }) }).Wait();
+                    "--fields",string.Join(",",new string[] { "page_faults", "cpu_time", "sql_text", "duration" }) });
 
+            await RunExe;
+    
             sw.Flush();
             Console.SetError(new StreamWriter(Console.OpenStandardError()));
             string ErrorMessage = "";

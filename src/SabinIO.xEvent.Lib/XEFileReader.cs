@@ -37,12 +37,18 @@ namespace SabinIO.xEvent.Lib
                 _fields = fields;
                 CancellationTokenSource cts = new CancellationTokenSource();
                 ct.Register(() => cts.Cancel());
+                events.CancelToken = cts.Token;
 
                 var readerTask = Task<(int rowsread, int rowsinserted)>.Run(async () =>
                     {
-                        _logger.LogInformation("Reader started");
-                        _logger.LogInformation("Reader {ProcessorId}-{ThreadId}", Thread.GetCurrentProcessorId(), Thread.CurrentThread.ManagedThreadId);
-                        return await ReadAsync(cts.Token);
+                        try
+                        {
+                            _logger.LogInformation("Reader started");
+                            _logger.LogInformation("Reader {ProcessorId}-{ThreadId}", Thread.GetCurrentProcessorId(), Thread.CurrentThread.ManagedThreadId);
+                            return await ReadAsync(cts.Token);
+                        }catch{ 
+                            cts.Cancel();
+                            throw; }
                     });
 
                 var bulkLoadTask = Task<int>.Run(async () =>
@@ -53,7 +59,9 @@ namespace SabinIO.xEvent.Lib
                         _logger.LogInformation("BulkLoadAsync {ProcessorId}-{ThreadId}", Thread.GetCurrentProcessorId(), Thread.CurrentThread.ManagedThreadId);
                         return await BulkLoadAsync(cts.Token);
                     }
-                    catch { cts.Cancel(); throw; }
+                    catch { 
+                        cts.Cancel();
+                        throw; }
                 });
 
                 await Task.WhenAll(readerTask, bulkLoadTask);

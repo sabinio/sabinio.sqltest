@@ -14,9 +14,17 @@ namespace SabinIO.Sql.Tests
 {
     public class ParseTests
     {
+        string ConnectionString;
         [SetUp]
         public void Setup()
         {
+            if  (TestContext.Parameters.Names.Contains("ConnectionString")){
+                ConnectionString=TestContext.Parameters["ConnectionString"];
+            }
+            else
+            {
+                ConnectionString= "";// throw new FileNotFoundException("need to set the run settings file");
+            }
         }
 
         [Test]
@@ -37,12 +45,10 @@ insert into @p3 values(100,N'simon')
 
             var Parameters = Parse.GetTVP(query);
 
-
             Assert.That(Parameters.Values.Select(p => p.Name), Is.EquivalentTo(new string[] { "@p3" }));
             Assert.That(Parameters.Values.Select(p => p.Types), Is.EquivalentTo(new List<string[]>() { new string[] { "Integer", "String" } }));
 
             DataTableAssertions.AssertTableRecordsAreEqual(dt, Parameters["@p3"].RowValues);
-
 
         }
 
@@ -65,7 +71,7 @@ exec sp_executesql N'select * from @p2 union select * from @p4',N'@p2 [TestType]
 
             Assert.That(Parameters.Count, Is.EqualTo(2), "Should find 2 parameters");
             Assert.That(Parameters.Values.Select(p => p.Name).ToArray(), Is.EquivalentTo(new string[] { "@p3", "@p4" }));
-
+            Assert.That(Parameters["@p3"].Type, Is.EqualTo("dbo.TestType"));
             Assert.That(Parameters["@p3"].Types, Is.EquivalentTo(new string[] { "Integer", "String" }));
             Assert.That(Parameters["@p4"].Types, Is.EquivalentTo(new string[] { "Integer", "String" }));
 
@@ -102,12 +108,12 @@ exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 a
             var stmt = Parse.GetStatement(query);
             Assert.That(stmt.statement, Is.EqualTo("select * from @p2 union select * from @p4 where @p3 = @p3 and @p1 = @p1"));
             Assert.That(stmt.parameters.Keys, Is.EquivalentTo(new string[] { "@p1", "@p2","@p3", "@p4" }));
-            Assert.That(stmt.parameters.Values.Select(v=>v.Type), Is.EquivalentTo(new string[] { "int", "[TestType]", "int", "[TestType]" }));
+            Assert.That(stmt.parameters.Values.Select(v=>v.FullType), Is.EquivalentTo(new string[] { "int", "[TestType]", "int", "[TestType]" }));
             Assert.That(stmt.parameters.Values.Select(v => v.Value), Is.EquivalentTo(new string[] { "100", "@p4", "3333", "@p6" }));
         }
 
         [Test]
-        public void ParsingCommandGetSqlCommand()
+        public void ParsingQueryWithTVPandExecSqlCommand()
         {
             var query = @"
 declare @p4 dbo.TestType
@@ -119,7 +125,7 @@ declare @p6 dbo.TestType
 insert into @p6 values(100,N'simon')
 
 exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 and @p1 = @p1',N'@p1 int,@p2 [TestType] READONLY,@p3 int,@p4 [TestType] READONLY',@p1=100,@p2=@p4,@p3=3333,@p4=@p6";
-            using SqlConnection c = new SqlConnection("data source=.;initial catalog=tempdb;trusted_connection=true");
+            using SqlConnection c = new SqlConnection(ConnectionString);
             c.Query("drop type if exists TestType ");
             c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
             try
@@ -142,9 +148,7 @@ exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 a
         public void RunATVPCommandToGetTheSample()
         {
 
-            using SqlConnection c = new SqlConnection("data source=.;initial catalog=tempdb;trusted_connection=true");
-            try
-            {
+            using SqlConnection c = new SqlConnection(ConnectionString);
                 c.Query("drop type if exists TestType ");
                 c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
 
@@ -156,25 +160,15 @@ exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 a
                 dt.Rows.Add(100, "simon");
                 
                 c.Query("select * from @p2", new { p1 = 100,p2 = dt.AsTableValuedParameter("TestType") ,p3=3333} );;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
            
-            finally
-            {
-            }
         }
 
         [Test]
         public void RunCommandWithMultipleTVPsToGetTheSample()
         {
 
-            using SqlConnection c = new SqlConnection("data source=.;initial catalog=tempdb;trusted_connection=true");
-            try
-            {
-
+            using SqlConnection c = new SqlConnection(ConnectionString);
+          
                 c.Query("drop type if exists TestType ");
                 c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
 
@@ -183,17 +177,102 @@ exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 a
                 dt.Columns.Add("varcharColumn", typeof(string));
                 dt.Rows.Add(100, "simon");
                 c.Query("select * from @p2 union select * from @p4 where @p3 = @p3 and @p1 = @p1", new { p1 = 100, p2 = dt.AsTableValuedParameter("TestType"), p3 = 3333 , p4 = dt.AsTableValuedParameter("TestType") }); 
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+         
+        }
+        [Test]
+        public void ParsingStringParams()
+        {
+            var query = @"exec dbo.SomeProc @User='bob'";
 
-            finally
-            {
-               
+            var stmt = Parse.GetStatement(query);
+            Assert.That(stmt.statement, Is.EqualTo("dbo.SomeProc"));
+            Assert.That(stmt.parameters.Keys, Is.EquivalentTo(new string[] { "@User"}));
+            Assert.That(stmt.parameters["@User"].Type, Is.EqualTo("varchar"));
 
-            }
+            var cmd = Parse.GetSqlCommand(query);
+            Assert.That(cmd.CommandText, Is.EqualTo("dbo.SomeProc"));
+            Assert.That(cmd.Parameters.Contains("@User") , Is.True,"User parameter exists");
+            Assert.That(cmd.Parameters["@User"].SqlDbType, Is.EqualTo(SqlDbType.VarChar));
+
+        }
+        [Test]
+        [TestCase("bit", SqlDbType.Bit, 0, 0)]
+        [TestCase("tinyint", SqlDbType.TinyInt, 0, 0)]
+        [TestCase("smallint", SqlDbType.SmallInt, 0, 0)]
+        [TestCase("int", SqlDbType.Int, 0, 0)]
+        [TestCase("bigint", SqlDbType.BigInt, 0, 0)]
+        [TestCase("varchar", SqlDbType.VarChar, 0, 0)]
+        [TestCase("varchar(20)", SqlDbType.VarChar, 20, 0)]
+        [TestCase("varchar(max)", SqlDbType.VarChar, -1, 0)]
+        [TestCase("nvarchar", SqlDbType.NVarChar, 0, 0)]
+        [TestCase("nvarchar(20)", SqlDbType.NVarChar, 20, 0)]
+        [TestCase("nvarchar(max)", SqlDbType.NVarChar, -1, 0)]
+        [TestCase("decimal", SqlDbType.Decimal, 0, 0)]
+        [TestCase("decimal(1)", SqlDbType.Decimal, 1, 0)]
+        [TestCase("decimal(10,2)", SqlDbType.Decimal, 10, 2)]
+        [TestCase("numeric", SqlDbType.Decimal, 0, 0)]
+        [TestCase("numeric(1)", SqlDbType.Decimal, 1, 0)]
+        [TestCase("numeric(10,2)", SqlDbType.Decimal, 10, 2)]
+        [TestCase("float", SqlDbType.Float, 0, 0)]
+        [TestCase("varbinary", SqlDbType.VarBinary, 0, 0)]
+        [TestCase("varbinary(max)",SqlDbType.VarBinary,-1,0)]
+        public void EnsureCanParseSp_executeWithIntParam(string sqlTypeString,SqlDbType SqlType, int size, int scale)
+        {
+            var query = @$"
+exec sp_executesql N'select @p1',N'@p1 {sqlTypeString}',NULL
+";
+            var stmt = Parse.GetStatement(query);
+            Assert.That(stmt.statement, Is.EqualTo("select @p1"));
+            Assert.That(stmt.parameters.Keys, Is.EquivalentTo(new string[] { "@p1" }));
+            Assert.That(stmt.parameters["@p1"].FullType, Is.EqualTo(sqlTypeString));
+            Assert.That(stmt.parameters["@p1"].length, Is.EqualTo(size));
+
+            var cmd = Parse.GetSqlCommand(query);
+            Assert.That(cmd.CommandText, Is.EqualTo("select @p1"));
+            Assert.That(cmd.Parameters.Contains("@p1"), Is.True, "User parameter exists");
+            Assert.That(cmd.Parameters["@p1"].SqlDbType, Is.EqualTo(SqlType));
+            Assert.That(cmd.Parameters["@p1"].Size, Is.EqualTo(size));
+
+
+        }
+        [Test]
+        public void ParsingTVPEnsureSQLCommandParams()
+        {
+            var query = @"
+declare @p2 dbo.TestType
+insert into @p2 values(100,N'simon')
+
+exec myProc @p1 = @p2
+";
+            var cmd = Parse.GetSqlCommand(query);
+            Assert.That(cmd.CommandText, Is.EqualTo("myProc"));
+            Assert.That(cmd.Parameters.Contains("@p1"), Is.True, "User parameter exists");
+            Assert.That(cmd.Parameters["@p1"].TypeName, Is.EqualTo("dbo.TestType"));
+
+        }
+
+        [Test]
+        public void ParsingOutputParams()
+        {
+            var query = @"
+declare @p10 int  set @p10=30396189  declare @p11 int  set @p11=1  exec dbo.SomeProc @info=NULL,@User='bob',@Id=@p10 output,@Ver=@p11 output  select @p10, @p11
+"; 
+
+            var stmt = Parse.GetStatement(query);
+            Assert.That(stmt.statement, Is.EqualTo("dbo.SomeProc"));
+            Assert.That(stmt.parameters.Keys, Is.EquivalentTo(new string[] { "@info", "@User", "@Id", "@Ver" }));
+            Assert.That(stmt.parameters.Values.Where(p=>p.isOutput).Select(s=>s.Name), Is.EquivalentTo(new string[] {"@Id", "@Ver" }));
+         }
+        [Test]
+        public void GetOutputStatement()
+        {
+
+            using SqlConnection c = new SqlConnection(ConnectionString);
+            var p = new DynamicParameters();
+            p.Add("p1", dbType: DbType.Int32, value: 50, direction: ParameterDirection.InputOutput) ;
+            c.Execute(@"set @p1 = @p1*2",p);
+            Assert.That(p.Get<int>("p1"),Is.EqualTo(100));
+                       
         }
     }
     public class SameRowValuesConstraint : NUnit.Framework.Constraints.Constraint

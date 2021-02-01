@@ -8,6 +8,7 @@ namespace SabinIO.Sql
     public class TVPParameter
     {
         public string Name;
+        public string Type;
         public List<string> Types = new List<string>();
         public DataTable RowValues = new DataTable();
     }

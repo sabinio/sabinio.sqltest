@@ -19,9 +19,16 @@ namespace SabinIO.SqlTest
         SqlConnection MonitorConnection;
         public string XEventSessionName;
 
+        public void Init() {
+            Init(new string[] { });
+        }
 
-        public void Init()
+        public void Init(string[] events)
         {
+            if (events.Length == 0)
+            {
+                events = new string[] { "sql_batch_starting", "sql_statement_completed", "sql_batch_completed" };
+            }
             TestingConnection = new SqlConnection($"{ConnectionStr};Application Name=bob");
 
             var spid = TestingConnection.QuerySingle<int>("select @@spid");
@@ -38,7 +45,7 @@ namespace SabinIO.SqlTest
                 
 
                 var packageEvents = new List<(string package, List<string> events)>(){
-                            ("sqlserver", new List<string> { "sql_batch_starting", "sql_statement_completed","sql_batch_completed" })
+                            ("sqlserver", new List<string> (events))
                         };
 
                 var packageActions = new List<(string package, List<string> actions)>
@@ -76,7 +83,7 @@ namespace SabinIO.SqlTest
             {
                 if (TestingConnection == null)
                 {
-                    Init();
+                    Init(new string[] { });
                     
                 }
                 return TestingConnection;

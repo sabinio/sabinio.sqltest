@@ -20,6 +20,7 @@ namespace SabinIO.xEvent.Lib.Tests
     {
         IServiceCollection services;
         IServiceProvider provider;
+        public string connectionString { get { return TestContext.Parameters["TraceConnectionString"]; } }
 
         [OneTimeSetUp]
         public void Setup()
@@ -53,7 +54,7 @@ namespace SabinIO.xEvent.Lib.Tests
 
             Assert.That(X.Select(y => y.eventName), Contains.Item("sql_batch_completed"));
             Assert.That(X, Has.Some.Property("eventName").EqualTo("sql_batch_completed"));
-
+           
             var foo = X.Aggregate((running, next) =>
             {
                 running.cpu_time += next.cpu_time;
@@ -113,17 +114,16 @@ namespace SabinIO.xEvent.Lib.Tests
 
         private XEFileReader SetupFileReader(string tablename, string filename= "sql_large.xel", string tableColumns ="")
         {
-            string connection = "data source=.;Trusted_Connection=True;initial catalog=test";
-
+            
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var samplexmlfile = Path.Combine(assemblyPath, filename);
 
             XEFileReader eventStream = provider.GetRequiredService<XEFileReader>();
             eventStream.filename = samplexmlfile;
-            eventStream.connection = connection;
+            eventStream.connection = connectionString;
             eventStream.tableName = tablename;
 
-            var Connection = new SqlConnection(connection);
+            var Connection = new SqlConnection(connectionString);
             Connection.Query($"drop table if exists {tablename}");
             Connection.Query($"create table {tablename} ({tableColumns})");
             return eventStream;
@@ -136,7 +136,7 @@ namespace SabinIO.xEvent.Lib.Tests
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             var samplexmlfile = Path.Combine(assemblyPath, "sql_large.xel");
-            string connection = "data source=.;Trusted_Connection=True;initial catalog=test";
+            string connection = connectionString;
 
             XEFileReader eventStream = provider.GetRequiredService<XEFileReader>();
             eventStream.filename = samplexmlfile;
@@ -166,7 +166,7 @@ namespace SabinIO.xEvent.Lib.Tests
 
             XEFileReader eventStream = provider.GetRequiredService<XEFileReader>();
             eventStream.filename = samplexmlfile;
-            eventStream.connection = "data source=.;Trusted_Connection=True;initial catalog=test";
+            eventStream.connection = connectionString;
             eventStream.tableName = "trace";
             
             var rowsread = await eventStream.ReadAsync(new System.Threading.CancellationToken());

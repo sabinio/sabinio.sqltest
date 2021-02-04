@@ -22,13 +22,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		test.runsettings = test.runsettings
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.Sql", "SabinIO.Sql.Parse\SabinIO.Sql.csproj", "{2620BD14-D898-4110-8A86-88F06B756991}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.Sql.Parse", "SabinIO.Sql.Parse\SabinIO.Sql.Parse.csproj", "{2620BD14-D898-4110-8A86-88F06B756991}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.Sql.Tests", "SabinIO.Sql.Parse.Tests\SabinIO.Sql.Tests.csproj", "{0B3384DA-4481-4A84-8AED-CD3E7687AF51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.Sql.Parse.Tests", "SabinIO.Sql.Parse.Tests\SabinIO.Sql.Parse.Tests.csproj", "{0B3384DA-4481-4A84-8AED-CD3E7687AF51}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.Sql.NUnitAssert", "SabinIO.Sql.Assert\SabinIO.Sql.NUnitAssert.csproj", "{C6F8AE6A-5F4D-4D92-8AC2-E7BF662BBF16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.Sql.NUnitAssert", "SabinIO.Sql.NunitAssert\SabinIO.Sql.NUnitAssert.csproj", "{C6F8AE6A-5F4D-4D92-8AC2-E7BF662BBF16}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.Sql.NUnitAssert.Tests", "SabinIO.Sql.Assert.Tests\SabinIO.Sql.NUnitAssert.Tests.csproj", "{907C923B-0088-40F7-B4C2-6671CCFED10D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SabinIO.Sql.NUnitAssert.Tests", "SabinIO.Sql.NunitAssert.Tests\SabinIO.Sql.NUnitAssert.Tests.csproj", "{907C923B-0088-40F7-B4C2-6671CCFED10D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sql", "Sql", "{A2AFA5BE-152C-41F3-9142-23599E55950C}"
 EndProject

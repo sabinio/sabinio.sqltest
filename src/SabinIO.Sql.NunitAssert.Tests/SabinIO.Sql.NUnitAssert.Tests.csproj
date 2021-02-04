@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SabinIO.Sql.Assert\SabinIO.Sql.NUnitAssert.csproj" />
+    <ProjectReference Include="..\SabinIO.Sql.NUnitAssert\SabinIO.Sql.NUnitAssert.csproj" />
   </ItemGroup>
 
 </Project>

@@ -17,7 +17,6 @@ namespace SabinIO.Sql
         public override void Visit(TSqlStatement node)
         {
 
-            DeclareTableVariableStatement t;
             switch (node)
             {
                 case InsertStatement insStmt:

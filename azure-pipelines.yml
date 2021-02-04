@@ -57,7 +57,7 @@ stages:
       inputs:
         command: 'build'
         projects: '**/*.sln'
-        arguments: '--configuration $(buildConfiguration) /m:4 -r $(TargetPlatform)'
+        arguments: '--configuration $(buildConfiguration) /m:4 
         includeNuGetOrg: true
 
     - task: VSTest@2

@@ -74,8 +74,16 @@ namespace SabinIO.Sql
                     default:
                         if (SqlParam.Value == null)
                         {
-                            //Assume an int
-                            p.SqlDbType = SqlDbType.Int;
+                            //Assume an int  
+                            if (SqlParam.Name == "@ExternalReference" && stmt.statement == "dbo.p_InsertPendingDocument")
+                            {
+                                p.SqlDbType = SqlDbType.UniqueIdentifier;
+                            }
+                            else if (SqlParam.Name.EndsWith("Date") && stmt.statement == "dbo.p_InsertPendingDocument")
+                            {
+                                p.SqlDbType = SqlDbType.DateTime;
+                            }
+                            else p.SqlDbType = SqlDbType.Int;
                             p.Value = DBNull.Value;
                         }
                    

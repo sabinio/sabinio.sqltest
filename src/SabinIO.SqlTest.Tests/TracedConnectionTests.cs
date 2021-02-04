@@ -27,16 +27,29 @@ namespace SabinIO.SqlTest.Tests
 
             Assert.That(() => result == "Simon");
 
-            TestConnection.Connection.Query("select @@version");
+            for (int i = 0; i < 1000000; i++)
+            {
 
+                TestConnection.Connection.Query("select @@version");
+
+            }
 
             var results = TestConnection.Statements().ToList();
             
-            Assert.That(results.Where(_ => _.name == "sql_statement_completed").Select(_=> _.actions["sql_text"]),Is.SupersetOf(new string[] { "select 'Simon'" }));
+            Assert.That(results.Where(_ => _.name == "sql_statement_completed").Select(_=> _.fields["sql_text"]),Is.SupersetOf(new string[] { "select 'Simon'" }));
 
         }
 
         CancellationToken CT;
+
+
+        [Test]
+        public void foo()
+        {
+            using var T = new TracedConnection() { ConnectionStr = connectionString };
+            T.GetSessions();
+        }
+
 
         [TestCase]
         public async Task  LiveStreamCapturesTheEvents()

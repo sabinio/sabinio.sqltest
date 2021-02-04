@@ -19,6 +19,8 @@ namespace SabinIO.SqlTest
         SqlConnection MonitorConnection;
         public string XEventSessionName;
 
+        public string target;
+
         public void Init() {
             Init(new string[] { });
         }
@@ -39,6 +41,10 @@ namespace SabinIO.SqlTest
                 var t = new XEStore(new SqlStoreConnection(MonitorConnection));
 
                 Session XEventSession = t.CreateSession(XEventSessionName);
+                var t3 = XEventSession.AddTarget(t.EventFileTargetInfo);
+                t3.TargetFields["filename"].Value = XEventSessionName;
+
+
                 var t2 = XEventSession.AddTarget(t.RingBufferTargetInfo);
                 XEventSession.EventRetentionMode = Session.EventRetentionModeEnum.NoEventLoss;
                 XEventSession.MaxDispatchLatency = 1;
@@ -50,10 +56,13 @@ namespace SabinIO.SqlTest
 
                 var packageActions = new List<(string package, List<string> actions)>
                         {
-                            ("sqlserver", new List<string> { "client_app_name", "client_pid", "database_id", "sql_text" }),
+                            ("sqlserver", new List<string> { "client_app_name", "client_pid", "database_id", "sql_text","context_info" }),
                             ("package0", new List<string> { "event_sequence" })
                         };
 
+                //capture lightweight profile
+                //ADD EVENT sqlserver.query_post_execution_plan_profile(
+//                ACTION(sqlos.scheduler_id, sqlserver.database_id, sqlserver.is_system, sqlserver.plan_handle, sqlserver.query_hash_signed, sqlserver.query_plan_hash_signed, sqlserver.server_instance_name, sqlserver.session_id, sqlserver.session_nt_username, sqlserver.sql_text))
 
                 var sessionColumn = t.Packages.Where(p => p.Name == "sqlserver").SelectMany(p => p.PredSourceInfoSet).Where(s => s.Name == "session_id").FirstOrDefault();
 
@@ -96,7 +105,7 @@ namespace SabinIO.SqlTest
              return Connection.QuerySingle<T>(cmd);
 
         }
-        public IEnumerable<(string name ,Dictionary<string,string> actions, Dictionary<string, string> fields)> Statements()
+        public IEnumerable<Statement> Statements()
         {
             // Stream s= new MemoryStream();
             using (MonitorConnection = new SqlConnection(ConnectionStr))
@@ -109,19 +118,32 @@ SELECT CAST(xet.target_data AS xml)
 FROM sys.dm_xe_session_targets AS xet
 JOIN sys.dm_xe_sessions AS xe    ON(xe.address = xet.event_session_address)
 WHERE xe.name = '{XEventSessionName}'
-";
+and xet.target_name = 'ring_buffer'
 
+";
                 var s = cmd.ExecuteXmlReader();
                 //.GetStream(0);
-
                 XElement eventXml = XElement.Load(s);
                 var x = from ev in eventXml.Descendants("event")
-                        select (name: ev.Attribute("name").Value,
-                                actions: ev.Elements("action").Select(act => (name: act.Attribute("name").Value, value: act.Element("value").Value)).ToDictionary(_ => _.name, _ => _.value),
-                                fields: ev.Elements("data").Select(act => (name: act.Attribute("name").Value, value: act.Element("value").Value)).ToDictionary(_ => _.name, _ => _.value)
-                                  );
+                        select new Statement(ev.Attribute("name").Value,
+                                  ev.Elements("action").Union(ev.Elements("data")).ToDictionary(_=>_.Attribute("name").Value, _=>_.Element("value").Value));
 
                 return x;
+            }
+        }
+
+        public void GetSessions()
+        {
+            using (MonitorConnection = new SqlConnection(ConnectionStr))
+            {
+
+                MonitorConnection.Open();
+
+
+                var t = new XEStore(new SqlStoreConnection(MonitorConnection));
+
+                var sessions = t.Sessions.ToList() ;
+
             }
         }
         public void StopTrace()

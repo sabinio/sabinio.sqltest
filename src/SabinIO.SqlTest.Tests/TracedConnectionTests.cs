@@ -27,7 +27,7 @@ namespace SabinIO.SqlTest.Tests
 
             Assert.That(() => result == "Simon");
 
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 10; i++)
             {
 
                 TestConnection.Connection.Query("select @@version");
@@ -44,35 +44,52 @@ namespace SabinIO.SqlTest.Tests
 
 
         [Test]
-        public void foo()
+        public void TestGetSessions()
         {
             using var T = new TracedConnection() { ConnectionStr = connectionString };
             T.GetSessions();
         }
 
 
-        [TestCase]
+        [Test]
+       // [Ignore("Not working")]
         public async Task  LiveStreamCapturesTheEvents()
         {
             using var T = new TracedConnection() { ConnectionStr = connectionString };
             T.Init();
-            var samplexml = new XELiveEventStreamer($"{T.ConnectionStr};Application Name=Trace" , T.XEventSessionName);
+            var XEConnection = new SqlConnectionStringBuilder(connectionString)
+                .InitialCatalog("master")
+                .ApplicationName("SabinIO.XETrace")
+                .ConnectionString;
 
+
+            var samplexml = new XELiveEventStreamer(XEConnection , T.XEventSessionName);
+            
             var tokenSource2 = new CancellationTokenSource();
             CT = tokenSource2.Token;
             List<IXEvent> bob = new List<IXEvent>();
 
-           Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId }");
+            var TraceReader = Task.Run(async () =>
+            { 
+               try
+               {
+                   await
+                   samplexml.ReadEventStream(
+                   evt =>
+                   {
+                       Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId }");
+                       TestContext.WriteLine($"Logging Event {evt.Name}");
+                       bob.Add(evt);
+                       return Task.CompletedTask;
+                   }, CT);
+               }
+               catch
+               {
 
-            var TraceReader = Task.Run(async ()=> await samplexml.ReadEventStream(
-                 evt =>
-                 {
-                     Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId }");
-                     TestContext.WriteLine($"Logging Event {evt.Name}");
-                     bob.Add(evt);
-                     return Task.CompletedTask;
-                 }, CT)).ConfigureAwait(false);
+               }
+           });
 
+            //this is needed to wait for the background thread to start
             await Task.Delay(100);
 
             
@@ -83,9 +100,9 @@ namespace SabinIO.SqlTest.Tests
             
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            while (sw.ElapsedMilliseconds < 10000)
+            while (sw.ElapsedMilliseconds < 1000)
             {
-                await Task.Delay(1000);
+                await Task.Delay(100);
             }
             sw.Stop();
             Assert.That(bob, Has.Count.EqualTo(6));
@@ -96,5 +113,22 @@ namespace SabinIO.SqlTest.Tests
 
         }
     }
-   
+   public static class ConnectionStringExtensions
+    {
+        public static SqlConnectionStringBuilder InitialCatalog(this SqlConnectionStringBuilder builder,string InitialCatalog) {
+            builder.InitialCatalog = InitialCatalog;
+            return builder;
+        }
+        public static SqlConnectionStringBuilder DataSource(this SqlConnectionStringBuilder builder, string DataSource)
+        {
+            builder.DataSource = DataSource;
+            return builder;
+        }
+
+        public static SqlConnectionStringBuilder ApplicationName(this SqlConnectionStringBuilder builder, string ApplicationName)
+        {
+            builder.ApplicationName = ApplicationName;
+            return builder;
+        }
+    }
 }

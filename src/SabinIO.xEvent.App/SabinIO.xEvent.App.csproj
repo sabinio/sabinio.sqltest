@@ -12,7 +12,9 @@
    <!-- <PublishReadyToRun>true</PublishReadyToRun>-->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
-
+    <Authors>Simon Sabin</Authors>
+    <Company>Sabin.IO</Company>
+    <Description>Application for the processing of xEvent files into a database</Description>
   </PropertyGroup>
   
   <ItemGroup>

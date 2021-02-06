@@ -14,16 +14,16 @@ namespace SabinIO.Sql.Tests
 {
     public class ParseTests
     {
-        string ConnectionString;
+        string TraceConnectionString;
         [SetUp]
         public void Setup()
         {
-            if  (TestContext.Parameters.Names.Contains("ConnectionString")){
-                ConnectionString=TestContext.Parameters["ConnectionString"];
+            if  (TestContext.Parameters.Names.Contains("TraceConnectionString")){
+                TraceConnectionString = TestContext.Parameters["TraceConnectionString"];
             }
             else
             {
-                ConnectionString= "";// throw new FileNotFoundException("need to set the run settings file");
+                TraceConnectionString = "";// throw new FileNotFoundException("need to set the run settings file");
             }
         }
 
@@ -125,7 +125,7 @@ declare @p6 dbo.TestType
 insert into @p6 values(100,N'simon')
 
 exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 and @p1 = @p1',N'@p1 int,@p2 [TestType] READONLY,@p3 int,@p4 [TestType] READONLY',@p1=100,@p2=@p4,@p3=3333,@p4=@p6";
-            using SqlConnection c = new SqlConnection(ConnectionString);
+            using SqlConnection c = new SqlConnection(TraceConnectionString);
             c.Query("drop type if exists TestType ");
             c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
             try
@@ -148,7 +148,7 @@ exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 a
         public void RunATVPCommandToGetTheSample()
         {
 
-            using SqlConnection c = new SqlConnection(ConnectionString);
+            using SqlConnection c = new SqlConnection(TraceConnectionString);
                 c.Query("drop type if exists TestType ");
                 c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
 
@@ -167,7 +167,7 @@ exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 a
         public void RunCommandWithMultipleTVPsToGetTheSample()
         {
 
-            using SqlConnection c = new SqlConnection(ConnectionString);
+            using SqlConnection c = new SqlConnection(TraceConnectionString);
           
                 c.Query("drop type if exists TestType ");
                 c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
@@ -267,7 +267,7 @@ declare @p10 int  set @p10=30396189  declare @p11 int  set @p11=1  exec dbo.Some
         public void GetOutputStatement()
         {
 
-            using SqlConnection c = new SqlConnection(ConnectionString);
+            using SqlConnection c = new SqlConnection(TraceConnectionString);
             var p = new DynamicParameters();
             p.Add("p1", dbType: DbType.Int32, value: 50, direction: ParameterDirection.InputOutput) ;
             c.Execute(@"set @p1 = @p1*2",p);

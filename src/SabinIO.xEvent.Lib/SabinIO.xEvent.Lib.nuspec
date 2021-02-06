@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/sabinio/sabinio.sqltest/</projectUrl>
+    <iconUrl>https://www.nuget.org/profiles/sabin.io/avatar?imageSize=512</iconUrl>
+    <description>$description$</description>
+    <copyright>Copyright 2021</copyright>
+    <tags>SQLServer xEvent</tags>
+  </metadata>
+</package>

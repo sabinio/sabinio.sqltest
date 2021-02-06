@@ -12,8 +12,8 @@
 
 	<!-- Parameters used by tests at run time -->
 	<TestRunParameters>
-		<Parameter name="ConnectionString" value="data source=.;initial catalog=AltoNew;user=sa;password=SimonIsGreat123" />
-		<Parameter name="TraceConnectionString" value="data source=.;initial catalog=AltoTraceAnalysis;user=sa;password=SimonIsGreat123" />
+		<Parameter name="ConnectionString" value="data source=.;initial catalog=test;user=sa;password=SimonIsGreat123" />
+		<Parameter name="TraceConnectionString" value="data source=.;initial catalog=trace;trusted_Connection=true" />
 	</TestRunParameters>
 
 	<!-- Configuration for loggers -->

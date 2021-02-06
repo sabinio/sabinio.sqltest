@@ -9,6 +9,7 @@ using System.Linq;
 using System.Xml.Linq;
 using System.IO;
 using System.Xml;
+using System.Diagnostics;
 
 namespace SabinIO.SqlTest
 {
@@ -22,7 +23,7 @@ namespace SabinIO.SqlTest
         public string target;
 
         public void Init() {
-            Init(new string[] { });
+            InitSQL(new string[] { });
         }
 
         public void Init(string[] events)
@@ -32,23 +33,27 @@ namespace SabinIO.SqlTest
                 events = new string[] { "sql_batch_starting", "sql_statement_completed", "sql_batch_completed" };
             }
             TestingConnection = new SqlConnection($"{ConnectionStr};Application Name=bob");
-
-            var spid = TestingConnection.QuerySingle<int>("select @@spid");
+            TestingConnection.Open();
+            var spid = TestingConnection.ServerProcessId;
             using (MonitorConnection = new SqlConnection(ConnectionStr))
             {
                 XEventSessionName = $"TestTrace{Guid.NewGuid()}";
-
+                var sw = new Stopwatch();
+                sw.Start();
                 var t = new XEStore(new SqlStoreConnection(MonitorConnection));
-
+                Console.WriteLine($"XEStore {sw.ElapsedMilliseconds}");
+                sw.Restart();
                 Session XEventSession = t.CreateSession(XEventSessionName);
-                var t3 = XEventSession.AddTarget(t.EventFileTargetInfo);
-                t3.TargetFields["filename"].Value = XEventSessionName;
+                //   var t3 = XEventSession.AddTarget(t.EventFileTargetInfo);
+                //   t3.TargetFields["filename"].Value = XEventSessionName;
 
-
+                Console.WriteLine($"XeventSession {sw.ElapsedMilliseconds}");
+                sw.Restart();
                 var t2 = XEventSession.AddTarget(t.RingBufferTargetInfo);
                 XEventSession.EventRetentionMode = Session.EventRetentionModeEnum.NoEventLoss;
                 XEventSession.MaxDispatchLatency = 1;
-                
+
+                Console.WriteLine($"AddTarget {sw.ElapsedMilliseconds}");
 
                 var packageEvents = new List<(string package, List<string> events)>(){
                             ("sqlserver", new List<string> (events))
@@ -59,13 +64,17 @@ namespace SabinIO.SqlTest
                             ("sqlserver", new List<string> { "client_app_name", "client_pid", "database_id", "sql_text","context_info" }),
                             ("package0", new List<string> { "event_sequence" })
                         };
+//attach_activity_id is a local id associated with the worker.This is incremented using ++ as each event is produced.
+//attach_activity_id_xfer
 
-                //capture lightweight profile
-                //ADD EVENT sqlserver.query_post_execution_plan_profile(
-//                ACTION(sqlos.scheduler_id, sqlserver.database_id, sqlserver.is_system, sqlserver.plan_handle, sqlserver.query_hash_signed, sqlserver.query_plan_hash_signed, sqlserver.server_instance_name, sqlserver.session_id, sqlserver.session_nt_username, sqlserver.sql_text))
-
+               //capture lightweight profile
+               //ADD EVENT sqlserver.query_post_execution_plan_profile(
+               //                ACTION(sqlos.scheduler_id, sqlserver.database_id, sqlserver.is_system, sqlserver.plan_handle, sqlserver.query_hash_signed, sqlserver.query_plan_hash_signed, sqlserver.server_instance_name, sqlserver.session_id, sqlserver.session_nt_username, sqlserver.sql_text))
+               sw.Restart();
                 var sessionColumn = t.Packages.Where(p => p.Name == "sqlserver").SelectMany(p => p.PredSourceInfoSet).Where(s => s.Name == "session_id").FirstOrDefault();
 
+                Console.WriteLine($"Packages {sw.ElapsedMilliseconds}");
+                sw.Restart();
                 var SessionPredicate = new PredCompareExpr(PredCompareExpr.ComparatorType.EQ, new PredOperand(sessionColumn), new PredValue(spid));
 
                 packageEvents.ForEach(p => p.events.ForEach(
@@ -80,11 +89,44 @@ namespace SabinIO.SqlTest
                     }
                     )
                 );
+
+                Console.WriteLine($"Predicates{sw.ElapsedMilliseconds}");
+                sw.Restart();
                 XEventSession.Create();
                 XEventSession.Start();
+
+                Console.WriteLine($"Create and Start{sw.ElapsedMilliseconds}");
             }
         }
+    public void InitSQL(string[] events)
+        {
+            TestingConnection = new SqlConnection($"{ConnectionStr};Application Name=bob");
+            TestingConnection.Open();
+            var spid = TestingConnection.ServerProcessId;
+            using (MonitorConnection = new SqlConnection(ConnectionStr))
+            {
+                XEventSessionName = $"TestTrace{Guid.NewGuid()}";
 
+ var sql=               @$"
+CREATE EVENT SESSION [{XEventSessionName}] ON SERVER 
+ADD EVENT sqlserver.sql_batch_completed(
+    ACTION(package0.event_sequence,sqlserver.client_app_name,sqlserver.client_pid,sqlserver.context_info,sqlserver.database_id,sqlserver.sql_text)
+    WHERE ([sqlserver].[session_id]=({spid}))),
+ADD EVENT sqlserver.sql_batch_starting(
+    ACTION(package0.event_sequence,sqlserver.client_app_name,sqlserver.client_pid,sqlserver.context_info,sqlserver.database_id,sqlserver.sql_text)
+    WHERE ([sqlserver].[session_id]=({spid}))),
+ADD EVENT sqlserver.sql_statement_completed(
+    ACTION(package0.event_sequence,sqlserver.client_app_name,sqlserver.client_pid,sqlserver.context_info,sqlserver.database_id,sqlserver.sql_text)
+    WHERE ([sqlserver].[session_id]=({spid})))
+ADD TARGET package0.ring_buffer
+WITH (EVENT_RETENTION_MODE=NO_EVENT_LOSS,MAX_DISPATCH_LATENCY=1 SECONDS);
+ALTER EVENT SESSION [{XEventSessionName}] ON SERVER STATE=START;
+
+";
+                MonitorConnection.Execute(sql);
+            }
+
+        }
         public SqlConnection Connection
 
         {

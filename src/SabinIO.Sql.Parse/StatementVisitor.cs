@@ -94,6 +94,9 @@ namespace SabinIO.Sql
                                         if (dt.Parameters.Count > 1) Parameters[sname].Scale = byte.Parse(dt.Parameters[1].Value);
 
                                         break;
+                                    case UserDataTypeReference udt:
+                                        Parameters[sname].Type = udt.Name.BaseIdentifier.Value;
+                                        break;
                                 }
                             }
                         }

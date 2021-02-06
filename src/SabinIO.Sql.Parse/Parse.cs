@@ -86,7 +86,12 @@ namespace SabinIO.Sql
                             else p.SqlDbType = SqlDbType.Int;
                             p.Value = DBNull.Value;
                         }
-                   
+                        else if (TVPs.ContainsKey(SqlParam.Value))
+                        {
+                            p.SqlDbType = SqlDbType.Structured;
+                            p.TypeName = TVPs[SqlParam.Value].Type;
+                            p.Value = TVPs[SqlParam.Value].RowValues;
+                        }
                         else
                         {
                             throw new NotSupportedException($"{SqlParam.Name}-{SqlParam.Type}");

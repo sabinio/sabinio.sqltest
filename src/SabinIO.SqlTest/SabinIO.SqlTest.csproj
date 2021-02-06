@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
-
+  <Authors>Simon Sabin</Authors>
+    <Company>Sabin.IO</Company>
+    <Description>Library for the undertaking of testing against SQL Server</Description>  
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,8 +13,14 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46041.41" />
-    <PackageReference Include="Microsoft.SqlServer.XEvent.XELite" Version="2020.11.19.1" />
+    <PackageReference Include="Microsoft.SqlServer.XEvent.XELite" Version="2021.1.14.8" />
     <PackageReference Include="Serilog" Version="2.10.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SabinIO.SqlTest.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

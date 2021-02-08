@@ -57,6 +57,7 @@ namespace SabinIO.SqlTest.Tests
         {
             using var T = new TracedConnection() { ConnectionStr = connectionString };
             T.Init();
+
             var XEConnection = new SqlConnectionStringBuilder(connectionString)
                 .InitialCatalog("master")
                 .ApplicationName("SabinIO.XETrace")

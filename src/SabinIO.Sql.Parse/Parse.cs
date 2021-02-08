@@ -15,8 +15,7 @@ namespace SabinIO.Sql
         {
             var TVPs = GetTVP(sql);
             var stmt = GetStatement(sql);
-            var c = new SqlCommand();
-            c.CommandText = stmt.statement;
+            var c = new SqlCommand() { CommandText = stmt.statement };
             if (stmt.isProc)
             {
                 c.CommandType = CommandType.StoredProcedure;
@@ -24,10 +23,12 @@ namespace SabinIO.Sql
             foreach (var SqlParam in stmt.parameters.Values)
             {
 
-                SqlParameter p = new SqlParameter();
-                p.ParameterName = SqlParam.Name;
-                p.Size = SqlParam.length;
-                p.Scale = SqlParam.Scale;
+                SqlParameter p = new SqlParameter
+                {
+                    ParameterName = SqlParam.Name,
+                    Size = SqlParam.length,
+                    Scale = SqlParam.Scale
+                };
                 c.Parameters.Add(p);
                 if (SqlParam.Value == null)
                 {
@@ -115,42 +116,38 @@ namespace SabinIO.Sql
         public static Dictionary<string,TVPParameter> GetTVP(string sql)
         {
 
-            using (var rdr = new StringReader(sql))
+            using var rdr = new StringReader(sql);
+            IList<ParseError> errors = new List<ParseError>();
+            var parser = new TSql150Parser(true, SqlEngineType.All);
+            var tree = parser.Parse(rdr, out errors);
+
+
+            if (errors.Count > 0)
             {
-                IList<ParseError> errors = new List<ParseError>();
-                var parser = new TSql150Parser(true, SqlEngineType.All);
-                var tree = parser.Parse(rdr, out errors);
-
-
-                if (errors.Count > 0)
-                {
-                    throw new AggregateException(errors.Select(e => new SyntaxErrorException($"{e.Message} Line {e.Line},{e.Column}")));
-                }
-                var p = new ParamVisitor();
-                tree.Accept(p);
-                return p.Parameters;
+                throw new AggregateException(errors.Select(e => new SyntaxErrorException($"{e.Message} Line {e.Line},{e.Column}")));
             }
+            var p = new ParamVisitor();
+            tree.Accept(p);
+            return p.Parameters;
 
 
         }
 
         public static Batch GetStatement(string query)
         {
-            using (var rdr = new StringReader(query))
+            using var rdr = new StringReader(query);
+            IList<ParseError> errors = new List<ParseError>();
+            var parser = new TSql150Parser(true, SqlEngineType.All);
+            var tree = parser.Parse(rdr, out errors);
+
+
+            if (errors.Count > 0)
             {
-                IList<ParseError> errors = new List<ParseError>();
-                var parser = new TSql150Parser(true, SqlEngineType.All);
-                var tree = parser.Parse(rdr, out errors);
-
-
-                if (errors.Count > 0)
-                {
-                    throw ParseException.CreateSingleOrAggregate(errors);
-                }
-                var p = new StatementVisitor(parser);
-                tree.Accept(p);
-                return new Batch() { statement = p.statement,isProc=p.isProc, parameters = p.Parameters };
+                throw ParseException.CreateSingleOrAggregate(errors);
             }
+            var p = new StatementVisitor(parser);
+            tree.Accept(p);
+            return new Batch() { statement = p.statement, isProc = p.isProc, parameters = p.Parameters };
         }
     }
       

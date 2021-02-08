@@ -14,7 +14,7 @@ namespace SabinIO.Sql
         public string statement;
         public Dictionary<string,Parameter> Parameters= new Dictionary<String, Parameter>();
         public bool isProc = false;
-        TSqlParser _parser;
+        readonly TSqlParser _parser;
         public StatementVisitor(TSqlParser parser)
         {
             _parser = parser;
@@ -79,17 +79,11 @@ namespace SabinIO.Sql
                                         Parameters[sname].Type = dt.Name.Identifiers[0].Value;
                                         if(dt.Parameters.Count > 0)
                                         {
-                                            switch (dt.Parameters[0].Value)
+                                            Parameters[sname].length = dt.Parameters[0].Value switch
                                             {
-                                                case "max":
-                                                    Parameters[sname].length = -1;
-                                                    break;
-                                                default:
-                                                    Parameters[sname].length = Int32.Parse(dt.Parameters[0].Value);
-                                                    break;
-
-                                            }
-
+                                                "max" => -1,
+                                                _ => Int32.Parse(dt.Parameters[0].Value),
+                                            };
                                         }
                                         if (dt.Parameters.Count > 1) Parameters[sname].Scale = byte.Parse(dt.Parameters[1].Value);
 
@@ -117,13 +111,8 @@ namespace SabinIO.Sql
                                 break;
                         }
                         break;
-
-
                 }
-
-
             }
-            var execParams = node.ExecuteSpecification.ExecutableEntity.Parameters;
         }
 
         private void GetProcExecute(ExecuteStatement node)
@@ -147,7 +136,6 @@ namespace SabinIO.Sql
 
 
             }
-            var execParams = node.ExecuteSpecification.ExecutableEntity.Parameters;
         }
 
         private static void SetParam(ScalarExpression scalarExp, Parameter param)
@@ -169,7 +157,7 @@ namespace SabinIO.Sql
                     param.Value = exp.Name;
                     param.Type = "variable";
                     break;
-                case NullLiteral exp:
+                case NullLiteral _:
                     param.Type = "null";
                     break;
                 case BinaryLiteral exp:

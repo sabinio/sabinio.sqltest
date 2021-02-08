@@ -226,13 +226,15 @@ exec sp_executesql N'select @p1',N'@p1 {sqlTypeString}',NULL
             Assert.That(stmt.parameters.Keys, Is.EquivalentTo(new string[] { "@p1" }));
             Assert.That(stmt.parameters["@p1"].FullType, Is.EqualTo(sqlTypeString));
             Assert.That(stmt.parameters["@p1"].length, Is.EqualTo(size));
+            Assert.That(stmt.parameters["@p1"].Scale, Is.EqualTo(scale));
+
 
             var cmd = Parse.GetSqlCommand(query);
             Assert.That(cmd.CommandText, Is.EqualTo("select @p1"));
             Assert.That(cmd.Parameters.Contains("@p1"), Is.True, "User parameter exists");
             Assert.That(cmd.Parameters["@p1"].SqlDbType, Is.EqualTo(SqlType));
             Assert.That(cmd.Parameters["@p1"].Size, Is.EqualTo(size));
-
+            Assert.That(cmd.Parameters["@p1"].Scale, Is.EqualTo(scale));
 
         }
         [Test]

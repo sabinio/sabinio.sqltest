@@ -10,6 +10,8 @@ using System.Xml.Linq;
 using System.IO;
 using System.Xml;
 using System.Diagnostics;
+using SabinIO.Sql;
+using System.Data;
 
 namespace SabinIO.SqlTest
 {
@@ -44,8 +46,8 @@ namespace SabinIO.SqlTest
                 Console.WriteLine($"XEStore {sw.ElapsedMilliseconds}");
                 sw.Restart();
                 Session XEventSession = t.CreateSession(XEventSessionName);
-                //   var t3 = XEventSession.AddTarget(t.EventFileTargetInfo);
-                //   t3.TargetFields["filename"].Value = XEventSessionName;
+                var t3 = XEventSession.AddTarget(t.EventFileTargetInfo);
+                t3.TargetFields["filename"].Value = XEventSessionName;
 
                 Console.WriteLine($"XeventSession {sw.ElapsedMilliseconds}");
                 sw.Restart();
@@ -154,24 +156,54 @@ ALTER EVENT SESSION [{XEventSessionName}] ON SERVER STATE=START;
             {
 
                 MonitorConnection.Open();
-                var cmd = MonitorConnection.CreateCommand();
-                cmd.CommandText = @$"
+                return GetEventsFromEventFile();
+            }
+        }
+
+        private IEnumerable<Statement> GetEventsFromEventFile()
+        {
+            var cmd = MonitorConnection.CreateCommand();
+            var events = MonitorConnection.Query<XElement>(@$"
+declare @filename varchar(max)= (
+SELECT CAST(xet.target_data AS xml).value('(/EventFileTarget/File)[1]/@name','nvarchar(max)')
+FROM sys.dm_xe_session_targets AS xet
+JOIN sys.dm_xe_sessions AS xe    ON(xe.address = xet.event_session_address)
+WHERE xe.name = @SessionName
+and xet.target_name = 'event_file')
+if @filename is null
+  begin
+    declare @msg nvarchar(max)=  FORMATMESSAGE(N'Cannot proceed no xEvent File found for session %s', @sessionName);
+    throw 510001,@msg,1
+    end
+else
+select event_data from sys.fn_xe_file_target_read_file(@filename,null,null,null)
+", new { SessionName = XEventSessionName });
+            var x = from ev in events
+                    select new Statement(ev.Attribute("name").Value,
+                              ev.Elements("action").Union(ev.Elements("data")).ToDictionary(_ => _.Attribute("name").Value, _ => _.Element("value").Value));
+
+            return x;
+        }
+
+        private IEnumerable<Statement> GetEventsFromRingBuffer()
+        {
+            var cmd = MonitorConnection.CreateCommand();
+            cmd.CommandText = @$"
 SELECT CAST(xet.target_data AS xml)
 FROM sys.dm_xe_session_targets AS xet
 JOIN sys.dm_xe_sessions AS xe    ON(xe.address = xet.event_session_address)
 WHERE xe.name = '{XEventSessionName}'
-and xet.target_name = 'ring_buffer'
+and xet.target_name != 'ring_buffer'
 
 ";
-                var s = cmd.ExecuteXmlReader();
-                //.GetStream(0);
-                XElement eventXml = XElement.Load(s);
-                var x = from ev in eventXml.Descendants("event")
-                        select new Statement(ev.Attribute("name").Value,
-                                  ev.Elements("action").Union(ev.Elements("data")).ToDictionary(_=>_.Attribute("name").Value, _=>_.Element("value").Value));
+            var s = cmd.ExecuteXmlReader();
+            //.GetStream(0);
+            XElement eventXml = XElement.Load(s);
+            var x = from ev in eventXml.Descendants("event")
+                    select new Statement(ev.Attribute("name").Value,
+                              ev.Elements("action").Union(ev.Elements("data")).ToDictionary(_ => _.Attribute("name").Value, _ => _.Element("value").Value));
 
-                return x;
-            }
+            return x;
         }
 
         public void GetSessions()
@@ -181,7 +213,7 @@ and xet.target_name = 'ring_buffer'
 
                 MonitorConnection.Open();
 
-
+                    
                 var t = new XEStore(new SqlStoreConnection(MonitorConnection));
 
                 var sessions = t.Sessions.ToList() ;
@@ -207,6 +239,57 @@ and xet.target_name = 'ring_buffer'
                 }
             }
         }
+
+
+        public IEnumerable<(int eventid, int logical, int physical, int cpu, int duration)> RunQueries(List<(string sql, int eventId)> queries,TextWriter log)
+        {
+            Init(new string[] { "rpc_completed" });
+            foreach (var (sql, eventId) in queries)
+            {
+                try
+                {
+                    //TestContext.WriteLine(query);
+                    this.Connection.Execute("declare @c varbinary(8) = cast(@eventId as varbinary(8)); SET CONTEXT_INFO @c--ignore", new { eventid = eventId });
+                    var stmt = Parse.GetSqlCommand(sql);
+                    stmt.Connection = this.Connection;
+                    stmt.CommandTimeout = 60;
+                    //Load the data to ensure query completes
+                    using IDataReader r = stmt.ExecuteReader();
+                    new DataTable().Load(r);
+                    r.Close();
+                }
+                catch (Exception ex)
+                {
+                    //We don't want to fail on executing a query
+                    log?.WriteLine(ex.Message);
+                }
+            }
+            //Allow all statements to be recorded
+            System.Threading.Thread.Sleep(10000);
+            var t = queries.Select(q2 => q2.eventId).Distinct();
+            var rawAfterStatements = Statements().Where(c => !c["sql_text"].EndsWith("--ignore") && !c["sql_text"].EndsWith("@@spid")).ToList();
+            var afterStatements = rawAfterStatements.Select(c =>
+                (
+                eventid: BitConverter.ToInt32(ContextInfoByteArray(c["context_info"])),
+                logical: Convert.ToInt32(c["logical_reads"]),
+                physical: Convert.ToInt32(c["physical_reads"]),
+                cpu: Convert.ToInt32(c["cpu_time"]),
+                duration: Convert.ToInt32(c["duration"])
+                )); ;
+
+            StopTrace();
+            return afterStatements;
+        }
+        private static byte[] ContextInfoByteArray(String hex)
+        {
+            int NumberChars = hex.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[((NumberChars - i) / 2) - 1] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
+
+        }
+
 
         public void Dispose()
         {

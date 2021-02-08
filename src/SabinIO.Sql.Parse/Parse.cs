@@ -40,13 +40,11 @@ namespace SabinIO.Sql
                     case "varchar":
                     case "nvarchar":
 
-                    case "binary":
                     case "datetime":
                     case "tinyint":
                     case "smallint":
                     case "int":
                     case "bigint":
-                    case "varbinary":
                     case "decimal":
                     case "float":
                         p.SqlDbType = Enum.Parse<SqlDbType>(SqlParam.Type, true);
@@ -57,6 +55,11 @@ namespace SabinIO.Sql
                     case "bit":
                         p.SqlDbType = SqlDbType.Bit;
                         p.Value = SqlParam.Value == "1";
+                        break;
+                    case "varbinary":
+                    case "binary":
+                        p.SqlDbType = Enum.Parse<SqlDbType>(SqlParam.Type, true);
+                        p.Value = StringToByteArray(SqlParam.Value);
                         break;
                     case "variable":
                         //This is when we have output parameters
@@ -71,6 +74,10 @@ namespace SabinIO.Sql
                         {
                             p.SqlDbType = SqlDbType.Int;
                         }
+                        break;
+                    case "default":
+                        //This is how you have the proc use a default value
+                        p.Value = null;
                         break;
                     default:
                         if (SqlParam.Value == null)
@@ -113,6 +120,15 @@ namespace SabinIO.Sql
         }
 
 
+        private  static byte[] StringToByteArray(String hex)
+        {
+            int NumberChars = hex.Length-2;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i/2] = Convert.ToByte(hex.Substring(i+2, 2), 16);
+            return bytes;
+
+        }
         public static Dictionary<string,TVPParameter> GetTVP(string sql)
         {
 

@@ -174,6 +174,9 @@ namespace SabinIO.Sql
                     //     param.Value = exp.Value;
                     param.Value = (exp.UnaryExpressionType == UnaryExpressionType.Negative ? "-" : "") + param.Value;
                     break;
+                case DefaultLiteral def:
+                    param.Type = "default";
+                        break;
                 default:
                     throw new NotSupportedException();
             }

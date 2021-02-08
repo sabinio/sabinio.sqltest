@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SabinIO.Sql.Parse\SabinIO.Sql.Parse.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="SabinIO.SqlTest.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

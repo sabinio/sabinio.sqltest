@@ -9,8 +9,10 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   NUGET_PACKAGES: $(build.SourcesDirectory)\packages
-  version: 
-
+  Version: "$(BaseVersion).$(MinorVersion)-beta" 
+  BaseVersion: "0.0"
+  MinorVersion: $[Counter(variables('BaseVersion'),1)]
+  
 stages:
 - stage: build
   pool:

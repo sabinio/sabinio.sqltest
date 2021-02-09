@@ -2,7 +2,7 @@
   "profiles": {
     "SabinIO.xEvent.App": {
       "commandName": "Project",
-      "commandLineArgs": "--filename  C:\\traces\\alto_data_Collection_0_132514632086360000.xel --connection \"data source=.;initial catalog=AltoTraceAnalysis;user=sa;password=SimonIsGreat123\" --tablename TraceEvents --batchsize 120000 --progress 120000 --fields \"{100}\" \"timestamp\" \"statement\" \"cpu_time\" \"duration\" \"row_count\" \"session_id\" \"physical_reads\" \"logical_reads\" \"writes\" \"object_name\" \"client_app_name\" --columns \"TraceId\" \"ts\" \"sql\" \"cpu\" \"duration\"  \"row_count\" \"spid\" \"physical_reads\" \"logical_reads\" \"writes\" \"object_name\" \"Application_name\" "
+      "commandLineArgs": "--filename  C:\\traces\\db_data_Collection_0_132514632086360000.xel --connection \"data source=.;initial catalog=TraceAnalysis;user=sa;password=SimonIsGreat123\" --tablename TraceEvents --batchsize 120000 --progress 120000 --fields \"{100}\" \"timestamp\" \"statement\" \"cpu_time\" \"duration\" \"row_count\" \"session_id\" \"physical_reads\" \"logical_reads\" \"writes\" \"object_name\" \"client_app_name\" --columns \"TraceId\" \"ts\" \"sql\" \"cpu\" \"duration\"  \"row_count\" \"spid\" \"physical_reads\" \"logical_reads\" \"writes\" \"object_name\" \"Application_name\" "
     }
   }
 }

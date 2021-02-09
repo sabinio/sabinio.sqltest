@@ -17,9 +17,9 @@
       },
       "Microsoft.SqlServer.XEvent.XELite": {
         "type": "Direct",
-        "requested": "[2020.11.19.1, )",
-        "resolved": "2020.11.19.1",
-        "contentHash": "U7Q46x2nmJlYkLrfvmJm9vz4Po3s9hVBZr7OjEl/9sz/YeoFj9q2Ws4zJpmMnl637EHUYH6vtSBuJJcttxn6gQ==",
+        "requested": "[2021.1.14.8, )",
+        "resolved": "2021.1.14.8",
+        "contentHash": "HrW9Gko+FiB+xmUj3/GJ0d6CEVgW6FmXFqT8Z0ds6Tx26eGa5Hk4eU9EsmPkVcB6LiDwcrRKb+lz0eJjlg+2qg==",
         "dependencies": {
           "Microsoft.Data.SqlClient": "2.0.0"
         }

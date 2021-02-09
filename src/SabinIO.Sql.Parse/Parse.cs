@@ -59,7 +59,7 @@ namespace SabinIO.Sql
                     case "varbinary":
                     case "binary":
                         p.SqlDbType = Enum.Parse<SqlDbType>(SqlParam.Type, true);
-                        p.Value = StringToByteArray(SqlParam.Value);
+                        if (SqlParam.Value !=null) p.Value= StringToByteArray(SqlParam.Value);
                         break;
                     case "variable":
                         //This is when we have output parameters

@@ -5,6 +5,7 @@ using SabinIO.xEvent.Lib;
 using Serilog;
 using Serilog.Events;
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Hosting;
@@ -33,12 +34,13 @@ namespace SabinIO.xEvent.App
                 {
                     Handler = Handler
                 };
-                rootCommand.AddOption(new Option<string>("--tablename", description: "Tablename to load trace into") );
+                rootCommand.AddOption(new Option<string>("--tablename", description: "Tablename to load trace into"));
                 rootCommand.AddOption(new Option<string>("--connection", description: "Connection string"));
                 rootCommand.AddOption(new Option<FileInfo>("--filename", description: "Extended event filename"));
                 rootCommand.AddOption(new Option<int>("--batchsize", getDefaultValue: () => 1000000, description: "Size of batches sent to bulk copy"));
                 rootCommand.AddOption(new Option<string[]>("--fields", description: "names of fields to load from extended events, constants can be inluded by wrapping in {}"));
-                rootCommand.AddOption(new Option<string[]>("--columns", getDefaultValue: () => new string[0] ,description: "names of columns in the target table to load")); ;
+                rootCommand.AddOption(new Option<string[]>("--columns", getDefaultValue: () => new string[0], description: "names of columns in the target table to load")); ;
+                rootCommand.AddOption(new Option<string[]>(new string[]{"--includedEvents", "--ie"}, getDefaultValue: () => new string[0], description: "event types to include")); ;
                 rootCommand.AddOption(new Option<string>("--logFile", description: "name of log file"));
                 rootCommand.AddOption(new Option<bool>("--debug", getDefaultValue: () => false, description: "outputs debug information to the standard out"));
                 rootCommand.AddOption(new Option<int>("--logLevel", getDefaultValue: () => -1, description: "outputs debug information to the standard out"));
@@ -118,7 +120,7 @@ namespace SabinIO.xEvent.App
      {
 
          var Option = host.Services.GetRequiredService<IOptions<XEventAppOptions>>().Value;
-         var (batchsize, tablename, connection, fields, filename, debug, logLevel, progress, columns) = Option;
+         var (batchsize, tablename, connection, fields, filename, debug, logLevel, progress, columns, includedEvents) = Option;
 
          Log.Information("The value for --batchsize is: {batchsize}", batchsize);
          Log.Information($"    --filename is: {filename?.FullName ?? "null"}");
@@ -126,6 +128,7 @@ namespace SabinIO.xEvent.App
          Log.Information($"    --table is: {tablename}");
          Log.Information($"    --fields are: {String.Join(",", fields)}");
          Log.Information($"    --columns are: {String.Join(",", columns)}");
+         Log.Information($"    --includedEvents are: {String.Join(",", includedEvents)}");
          Log.Information($"    --batchsize is: {batchsize}");
          Log.Information($"    --progress is: {progress}");
          Log.Information($"    --logLevel is: {logLevel}");
@@ -137,7 +140,7 @@ namespace SabinIO.xEvent.App
          eventStream.tableName = tablename;
          eventStream.batchsize = batchsize;
          eventStream.progress = progress;
-
+         eventStream.includedEvents = new HashSet<string>(includedEvents);
          try
          {
              Stopwatch sw = new Stopwatch();
@@ -171,6 +174,7 @@ namespace SabinIO.xEvent.App
         public string connection { get; set; }
         public string[] fields { get; set; }
         public string[] columns { get; set; }
+        public string[] includedEvents { get; set; }
         public FileInfo filename { get; set; }
         public bool debug { get; set; }
         public int logLevel { get; set; }
@@ -187,7 +191,8 @@ namespace SabinIO.xEvent.App
             out bool debug, 
             out int logLevel, 
             out int progress,
-            out string[] columns)
+            out string[] columns,
+            out string[] includedEvents)
         { 
             batchsize = this.batchsize; 
             tablename = this.tablename; 
@@ -198,6 +203,7 @@ namespace SabinIO.xEvent.App
             logLevel = this.logLevel; 
             progress = this.progress;
             columns = this.columns;
+            includedEvents = this.includedEvents;
         }
     }
 

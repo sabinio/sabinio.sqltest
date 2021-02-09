@@ -20,9 +20,9 @@
       },
       "NUnit": {
         "type": "Direct",
-        "requested": "[3.13.0, )",
-        "resolved": "3.13.0",
-        "contentHash": "G+BOONgJKtNtprjGQ54l0m+Vq2VFCMh/H6ljuHfqrRlX6YkNy0GjMd5Nn0NpJidGpRd4gAOJsBqNuxr7Kgc/5g==",
+        "requested": "[3.13.1, )",
+        "resolved": "3.13.1",
+        "contentHash": "vWBvrSelmTYwqHWvO3dA63z7cOpaFR/3nJ9MMVLBkWeaWa7oiglPPm5g1h96B4i2XXqjFexxhR5MyMjmIJYPfg==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -380,8 +380,8 @@
       },
       "Microsoft.SqlServer.XEvent.XELite": {
         "type": "Transitive",
-        "resolved": "2020.11.19.1",
-        "contentHash": "U7Q46x2nmJlYkLrfvmJm9vz4Po3s9hVBZr7OjEl/9sz/YeoFj9q2Ws4zJpmMnl637EHUYH6vtSBuJJcttxn6gQ==",
+        "resolved": "2021.1.14.8",
+        "contentHash": "HrW9Gko+FiB+xmUj3/GJ0d6CEVgW6FmXFqT8Z0ds6Tx26eGa5Hk4eU9EsmPkVcB6LiDwcrRKb+lz0eJjlg+2qg==",
         "dependencies": {
           "Microsoft.Data.SqlClient": "2.0.0"
         }
@@ -1492,7 +1492,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging": "5.0.0",
-          "Microsoft.SqlServer.XEvent.XELite": "2020.11.19.1"
+          "Microsoft.SqlServer.XEvent.XELite": "2021.1.14.8"
         }
       },
       "XEvent.": {

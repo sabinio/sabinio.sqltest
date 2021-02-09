@@ -12,6 +12,7 @@ using System.Xml;
 using Dapper;
 using SabinIO.xEvent.Lib;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace SabinIO.xEvent.Lib.Tests
 {
@@ -111,8 +112,22 @@ namespace SabinIO.xEvent.Lib.Tests
             );
         }
 
+        [Test]
+        public async Task TestCompressionofColumn()
+        {
+            var (rowsread, rowsinserted) = await
+                  SetupFileReader("TestCompression", tableColumns: "uuid uniqueidentifier null, event_name varchar(100), sql_text_compressed varbinary(max),sql_text as cast(decompress(sql_text_compressed) as nvarchar(max))"
+                  , includedEvents: new string[] { "rpc_completed" })
+                .ReadAndLoad(new string[] { "sql_text.compressed" }, new string[] { "sql_text_compressed" }, new System.Threading.CancellationToken());
 
-        private XEFileReader SetupFileReader(string tablename, string filename= "sql_large.xel", string tableColumns ="")
+            Assert.That(rowsread, Is.EqualTo(rowsinserted));
+            Assert.That(rowsread, Is.Not.EqualTo(0));
+            TestContext.Write($"rows read        {rowsread}");
+            TestContext.Write($"rows bulk loaded {rowsinserted}");
+
+        }
+
+        private XEFileReader SetupFileReader(string tablename, string filename= "sql_large.xel", string tableColumns ="", string[] includedEvents = null)
         {
             
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -122,6 +137,7 @@ namespace SabinIO.xEvent.Lib.Tests
             eventStream.filename = samplexmlfile;
             eventStream.connection = connectionString;
             eventStream.tableName = tablename;
+            eventStream.includedEvents = new HashSet<string>(includedEvents);
 
             var Connection = new SqlConnection(connectionString);
             Connection.Query($"drop table if exists {tablename}");

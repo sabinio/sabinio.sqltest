@@ -32,10 +32,12 @@ namespace XEvent.App.Tests
 
             var result = Program.Main(new string[] {
                     "--batchsize","10000",
-                    "--tablename","Trace",
+                    "--tablename","TraceEvents",
                     "--connection", connectionString,
                     "--filename", samplexmlfile,
-                    "--fields",string.Join(",",new string[] { "page_faults", "cpu_time", "sql_text", "duration" }) }).GetAwaiter().GetResult();
+                    "--fields",  "{100}","sql_text",
+                    "--includedEvents","rpc_completed",
+                    "--columns","TraceId","sql"}).GetAwaiter().GetResult();
             sw.Flush();
 
             Console.SetError(new StreamWriter(Console.OpenStandardError()));

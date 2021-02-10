@@ -16,8 +16,11 @@ namespace SabinIO.xEvent.Lib
         public string tableName;
         public int batchsize = 100000;
         public int progress { set { events.progress = value; } }
+
+        public HashSet<string> includedEvents { get; set; }
+
         readonly XEventStream events;
-        string[] _fields;
+        string[] _fields  { get{ return events.fields; }}
         string[] _columns;
 
         private readonly ILogger<XEFileReader> _logger;
@@ -26,6 +29,7 @@ namespace SabinIO.xEvent.Lib
         {
             _logger = logger;
             events = new XEventStream(_logger);
+            includedEvents = new HashSet<string>();
         }
         public async Task<(int rowsread, int rowsinserted)> ReadAndLoad(string[] fields, string[] columns, CancellationToken ct)
         {
@@ -34,7 +38,7 @@ namespace SabinIO.xEvent.Lib
             {
                 events.fields = fields;
                 _columns = columns;
-                _fields = fields;
+
                 CancellationTokenSource cts = new CancellationTokenSource();
                 ct.Register(() => cts.Cancel());
                 events.CancelToken = cts.Token;
@@ -79,7 +83,13 @@ namespace SabinIO.xEvent.Lib
             try
             {
                 await samplexml.ReadEventStream(() => Task.CompletedTask
-                , (x) => Task.Run(() => events.Add(x))
+                ,async (x) =>
+                {
+                    if (includedEvents.Count==0 || includedEvents.Contains(x.Name))
+                    {
+                        await Task.Run(() => events.Add(x));
+                    }
+                }
                 , ct);
             }
             catch (OperationCanceledException)

@@ -11,7 +11,7 @@ variables:
   NUGET_PACKAGES: $(build.SourcesDirectory)\packages
   Version: "$(BaseVersion).$(MinorVersion)-beta" 
   BaseVersion: "0.0"
-  MinorVersion: $[Counter(variables('BaseVersion'),1)]
+  MinorVersion: $[counter(variables['BaseVersion'],1)]
   
 stages:
 - stage: build

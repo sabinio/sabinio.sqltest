@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
-    <PackageReference Include="Microsoft.SqlServer.XEvent.XELite" Version="2020.11.19.1" />
+    <PackageReference Include="Microsoft.SqlServer.XEvent.XELite" Version="2021.1.14.8" />
   </ItemGroup>
 
   <ItemGroup>

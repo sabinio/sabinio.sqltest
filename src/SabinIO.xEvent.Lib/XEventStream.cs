@@ -3,7 +3,11 @@ using Microsoft.SqlServer.XEvent.XELite;
 using System;
 using System.Collections.Concurrent;
 using System.Data;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,11 +18,32 @@ namespace SabinIO.xEvent.Lib
     {
         private int _count = 0;
         private readonly BlockingCollection<IXEvent> _Q;
-        //        private List<IXEvent> _list;
+
         public CancellationToken CancelToken;
         int readposition = -1;
         private string[] _fieldList;
-        public string[] fields { get { return _fieldList; } set { _fieldList = value.Select(_ => _.ToLower()).ToArray(); } }
+        public string[] fields { get { return _fieldList; } 
+            set {
+                _fieldList = new string[value.Length];
+                _compressedfield = new bool[value.Length];
+                for (int i = 0; i < value.Length; i++)
+                {
+                    var field = value[i];
+                   
+                    if (field.EndsWith(".compressed"))
+                    {
+                        _fieldList[i] = field[..field.LastIndexOf('.')];
+                        _compressedfield[i] = true;
+                    }
+                    else
+                    {
+                        _fieldList[i] = field;
+                        _compressedfield[i] = false;
+                    }
+                }
+} 
+        }
+        private bool[] _compressedfield;
 
         public bool finishedLoading { set { _Q.CompleteAdding(); } }
         IXEvent CurrentItem;
@@ -29,7 +54,7 @@ namespace SabinIO.xEvent.Lib
         public XEventStream(ILogger logger)
         {
             _logger = logger;
-            //_list = new List<IXEvent>();
+
             _Q = new BlockingCollection<IXEvent>(maxQueueSize);
         }
         public void Add(IXEvent item)
@@ -46,7 +71,7 @@ namespace SabinIO.xEvent.Lib
 
         public bool Read()
         {
-           
+
             if (readposition % progress == 0) _logger?.LogInformation($"ReadAsync {readposition}");
             if (_Q.IsCompleted)
             {
@@ -68,33 +93,46 @@ namespace SabinIO.xEvent.Lib
         }
         public object GetValue(int i)
         {
-            string field = _fieldList[i];
-            switch (field)
-            {
-                case "uuid":
-                    return CurrentItem.UUID;
-                case "event_name":
-                    return CurrentItem.Name;
-                case "timestamp":
-                    return CurrentItem.Timestamp;
-                default:
+            object result = GetRawFieldValue(i);
 
-                    if (CurrentItem.Fields.ContainsKey(field))
-                    {
-                        return CurrentItem.Fields[field];
-                    }
-                    else if (CurrentItem.Actions.ContainsKey(field))
-                    {
-                        return CurrentItem.Actions[field];
-                    }
-                    else if (field.StartsWith('{')) {
-                        return field[1..^1];
-                    }
-                    else throw new InvalidFieldException(field);
+            if (_compressedfield[i])
+            {
+                return CompressMyValue((string)result);
             }
+            else return result;
         }
 
-       
+        private object GetRawFieldValue(int i)
+        {
+            return _fieldList[i] switch
+            {
+                "uuid" => CurrentItem.UUID,
+                "event_name" => CurrentItem.Name,
+                "timestamp" => CurrentItem.Timestamp,
+                string field when CurrentItem.Fields.ContainsKey(field) => CurrentItem.Fields[field],
+                string field when CurrentItem.Actions.ContainsKey(field) => CurrentItem.Actions[field],
+                string field when (field[0] == '{') => field[1..^1],
+                _ => throw new InvalidFieldException(_fieldList[i])
+
+            };
+        }
+
+
+
+        private static byte[] CompressMyValue(string value)
+        {
+            using (MemoryStream streamOut = new MemoryStream())
+            {
+                using (GZipStream compressingStream = new GZipStream(streamOut, CompressionMode.Compress))
+                using (MemoryStream zipStream = new MemoryStream(Encoding.Unicode.GetBytes(value)))
+                {
+                    zipStream.CopyTo(compressingStream);
+                }
+               return  streamOut.ToArray();
+            }
+
+        }
+
         public int Count { get { return _count; } }
 
         public int FieldCount { get { return  _fieldList.Length; } }

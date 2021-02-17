@@ -70,11 +70,21 @@ namespace SabinIO.SqlTest.Tests
             CT = tokenSource2.Token;
             List<IXEvent> bob = new List<IXEvent>();
 
-            var TraceReader = Task.Run(async () =>
+      
+            new Thread(() => samplexml.ReadEventStream(
+                   evt =>
+                   {
+                       Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId }");
+                       TestContext.WriteLine($"Logging Event {evt.Name}");
+                       bob.Add(evt);
+                       return Task.CompletedTask;
+                   }, CT)).Start();
+
+            /*var TraceReader = Task.Run(() =>
             { 
                try
                {
-                   await
+                   
                    samplexml.ReadEventStream(
                    evt =>
                    {
@@ -82,16 +92,17 @@ namespace SabinIO.SqlTest.Tests
                        TestContext.WriteLine($"Logging Event {evt.Name}");
                        bob.Add(evt);
                        return Task.CompletedTask;
-                   }, CT);
+                   }, CT).ConfigureAwait(false);
                }
                catch
                {
 
                }
-           });
+           }).ConfigureAwait(false);
+            */
 
-            //this is needed to wait for the background thread to start
-            await Task.Delay(100);
+            //this is needed to wait for the background thread to start, in debug the background thread takes longer to start and be able to process the events
+            await Task.Delay(300); //300ms allows ~ 20-50ms buffer
 
             
             var result = T.Execute<string>("select 'Simon'");
@@ -101,7 +112,7 @@ namespace SabinIO.SqlTest.Tests
             
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            while (sw.ElapsedMilliseconds < 1000)
+            while (sw.ElapsedMilliseconds < 1500)
             {
                 await Task.Delay(100);
             }

@@ -25,15 +25,16 @@ namespace SabinIO.SqlTest
         public string target;
 
         public void Init() {
-            InitSQL(new string[] { });
+            InitSQL();
         }
 
-        public void Init(string[] events)
+        public void Init(string[] events = null, string[] filters = null)
         {
-            if (events.Length == 0)
+            if (events==null || events.Length == 0)
             {
-                events = new string[] { "sql_batch_starting", "sql_statement_completed", "sql_batch_completed" };
+                events = new string[] { "sql_batch_starting", "sql_statement_completed", "sql_batch_completed"};
             }
+
             TestingConnection = new SqlConnection($"{ConnectionStr};Application Name=bob");
             TestingConnection.Open();
             var spid = TestingConnection.ServerProcessId;
@@ -100,32 +101,139 @@ namespace SabinIO.SqlTest
                 Console.WriteLine($"Create and Start{sw.ElapsedMilliseconds}");
             }
         }
-    public void InitSQL(string[] events)
+
+        public IEnumerable<(int eventid,long query_hash,long query_plan_hash)> GetHashes(List<(string sql, int eventid)> queries,TextWriter log=null)
         {
+            //query_post_execution_showplan
+            InitSQL(new string[] { "sql_statement_completed", "sp_statement_completed" },
+                            new string[] { "query_hash_signed", "plan_handle", "query_plan_hash_signed" ,"context_info"},
+                            new string[] { " [sqlserver].[query_hash_signed]<>(0)" }, 
+                            log);
+
+            Dictionary<int, Exception> errors = new Dictionary<int, Exception>();
+            foreach (var (sql, eventId) in queries)
+            {
+                try
+                {
+                    //TestContext.WriteLine(query);
+                    this.Connection.Execute("declare @c varbinary(8) = cast(@eventId as varbinary(8)); SET CONTEXT_INFO @c--ignore", new { eventid = eventId });
+                    var stmt = Parse.GetSqlCommand(sql);
+                    stmt.Connection = Connection;
+                    stmt.CommandTimeout = 60;
+                    //Load the data to ensure query completes
+                    using IDataReader r = stmt.ExecuteReader();
+                    new DataTable().Load(r);
+                    r.Close();
+                }
+                catch (Exception ex)
+                {
+                    //We don't want to fail on executing a query
+                    log?.WriteLine(ex.Message);
+                    errors.Add(eventId, ex);
+                }
+            }
+            //Allow all statements to be recorded
+            System.Threading.Thread.Sleep(10000);
+
+            /*   var t = queries.Select(q2 => q2.eventId).Distinct();*/
+
+            var rawAfterStatements = Statements().Where(c => !c["sql_text"].EndsWith("--ignore") && !c["sql_text"].EndsWith("@@spid")).ToList();
+            var afterStatements = rawAfterStatements.Select(c =>
+                (
+                eventid: BitConverter.ToInt32(ContextInfoByteArray(c["context_info"])),
+                query_hash_signed: Convert.ToInt64(c["query_hash_signed"]),
+                query_plan_hash_signed: Convert.ToInt64(c["query_plan_hash_signed"])
+                )); ;
+            StopTrace();
+
+            return afterStatements;
+        }
+
+
+
+        public void LoadHashes(string TraceConnectionStr, IEnumerable<(int eventid, long query_hash, long query_plan_hash)> hashes)
+        {
+            var fields = new string[] { "eventid", "query_hash", "query_plan_hash" };
+
+            var f = new DBReader<(int eventid, long query_hash, long query_plan_hash)>(hashes.ToList(),
+                 ((int eventid, long query_hash, long query_plan_hash) data, int key) =>
+                key switch
+                {
+                    0 => data.eventid,
+                    1=> data.query_hash,
+                    2=> data.query_plan_hash,
+                    _ => null
+                },
+                 null);
+            
+            ;
+
+            using SqlConnection StoreConnection = new SqlConnection(TraceConnectionStr) ;
+            using SqlBulkCopy bc = new SqlBulkCopy(StoreConnection) ;
+            StoreConnection.Open();
+            StoreConnection.Execute("drop table if exists EventQueryHash ");
+            StoreConnection.Execute("create table EventQueryHash (eventid int, query_hash bigint, query_plan_hash bigint)");
+
+            bc.DestinationTableName = "EventQueryHash";
+                bc.WriteToServer(f);
+        }
+
+
+        public void InitSQL(string[] events =null,string [] actions=null,IList<string> filters=null, TextWriter log=null)
+        {
+            if (events==null || events.Length == 0)
+            {
+                events = new string[] { "sql_batch_starting", "sql_statement_completed", "sql_batch_completed" };
+            }
+            if (actions == null)
+                actions = new string[] { "client_app_name", "client_pid", "context_info", "database_id", "sql_text" };
+
+            if (filters == null)
+                filters =new List<string>();
+
             TestingConnection = new SqlConnection($"{ConnectionStr};Application Name=bob");
             TestingConnection.Open();
             var spid = TestingConnection.ServerProcessId;
+
+            filters.Add($"[sqlserver].[session_id]=({spid})");
+
             using (MonitorConnection = new SqlConnection(ConnectionStr))
             {
                 XEventSessionName = $"TestTrace{Guid.NewGuid()}";
+                log?.WriteLine($"Trace name = {XEventSessionName}");
 
- var sql=               @$"
-CREATE EVENT SESSION [{XEventSessionName}] ON SERVER 
-ADD EVENT sqlserver.sql_batch_completed(
-    ACTION(package0.event_sequence,sqlserver.client_app_name,sqlserver.client_pid,sqlserver.context_info,sqlserver.database_id,sqlserver.sql_text)
-    WHERE ([sqlserver].[session_id]=({spid}))),
-ADD EVENT sqlserver.sql_batch_starting(
-    ACTION(package0.event_sequence,sqlserver.client_app_name,sqlserver.client_pid,sqlserver.context_info,sqlserver.database_id,sqlserver.sql_text)
-    WHERE ([sqlserver].[session_id]=({spid}))),
-ADD EVENT sqlserver.sql_statement_completed(
-    ACTION(package0.event_sequence,sqlserver.client_app_name,sqlserver.client_pid,sqlserver.context_info,sqlserver.database_id,sqlserver.sql_text)
-    WHERE ([sqlserver].[session_id]=({spid})))
-ADD TARGET package0.ring_buffer
-WITH (EVENT_RETENTION_MODE=NO_EVENT_LOSS,MAX_DISPATCH_LATENCY=1 SECONDS);
-ALTER EVENT SESSION [{XEventSessionName}] ON SERVER STATE=START;
+                using StringWriter sw = new StringWriter();
+                sw.WriteLine($"CREATE EVENT SESSION [{XEventSessionName}] ON SERVER ");
+                
+                bool first = true;
+                foreach (var evt in events)
+                {
+                    if (!first) { sw.WriteLine(","); }
+                    else first = false;
 
-";
-                MonitorConnection.Execute(sql);
+                    sw.Write($@"
+ADD EVENT sqlserver.{evt}(
+    ACTION(package0.event_sequence");
+                    foreach (var action in actions)
+                    {
+                        if (action.IndexOf('.') > 0) sw.Write($",{action}");
+                        else sw.Write($",sqlserver.{action}");
+
+                    }
+                    sw.WriteLine($") WHERE ");
+                    for (int i = 0; i < filters.Count; i++)
+                    {
+                        sw.WriteLine($"{(i > 0 ? "AND" : "")} {filters[i]} ");
+                    }
+                    sw.Write(")");
+                }
+                sw.WriteLine(@$"
+ADD TARGET package0.event_file(SET filename=N'{XEventSessionName}')
+--,ADD TARGET package0.ring_buffer
+WITH (MAX_MEMORY=50096 KB,EVENT_RETENTION_MODE=NO_EVENT_LOSS,MAX_DISPATCH_LATENCY=1 SECONDS,MAX_EVENT_SIZE=0 KB,MEMORY_PARTITION_MODE=NONE,TRACK_CAUSALITY=OFF,STARTUP_STATE=OFF)
+ALTER EVENT SESSION [{XEventSessionName}] ON SERVER STATE=START;");
+                sw.Flush();
+                MonitorConnection.Execute(sw.ToString());
             }
 
         }
@@ -220,7 +328,7 @@ and xet.target_name != 'ring_buffer'
 
             }
         }
-        public void StopTrace()
+        public void StopTrace(bool drop= true)
         {
 
             using (MonitorConnection = new SqlConnection(ConnectionStr))
@@ -243,7 +351,8 @@ and xet.target_name != 'ring_buffer'
 
         public IEnumerable<(int eventid, int logical, int physical, int cpu, int duration)> RunQueries(List<(string sql, int eventId)> queries,TextWriter log)
         {
-            Init(new string[] { "rpc_completed" });
+            InitSQL(new string[] { "rpc_completed" },log:log);
+            Dictionary<int, Exception> errors = new Dictionary<int, Exception>();
             foreach (var (sql, eventId) in queries)
             {
                 try
@@ -262,6 +371,7 @@ and xet.target_name != 'ring_buffer'
                 {
                     //We don't want to fail on executing a query
                     log?.WriteLine(ex.Message);
+                    errors.Add(eventId, ex);
                 }
             }
             //Allow all statements to be recorded
@@ -276,6 +386,7 @@ and xet.target_name != 'ring_buffer'
                 cpu: Convert.ToInt32(c["cpu_time"]),
                 duration: Convert.ToInt32(c["duration"])
                 )); ;
+
 
             StopTrace();
             return afterStatements;

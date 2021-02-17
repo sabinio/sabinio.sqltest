@@ -137,8 +137,7 @@ namespace SabinIO.xEvent.Lib.Tests
             eventStream.filename = samplexmlfile;
             eventStream.connection = connectionString;
             eventStream.tableName = tablename;
-            eventStream.includedEvents = new HashSet<string>(includedEvents);
-
+            if (includedEvents != null) { eventStream.includedEvents = new HashSet<string>(includedEvents); }
             var Connection = new SqlConnection(connectionString);
             Connection.Query($"drop table if exists {tablename}");
             Connection.Query($"create table {tablename} ({tableColumns})");

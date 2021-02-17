@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using SabinIO.xEvent.App;
+using Dapper;
 
 namespace XEvent.App.Tests
 {
@@ -30,9 +31,12 @@ namespace XEvent.App.Tests
             using var sw = new StreamWriter(ErrorStream);
             Console.SetError(sw);
 
+            new SqlConnection(connectionString).Query("drop table if exists TestAppExecutes");
+            new SqlConnection(connectionString).Query("create table TestAppExecutes (TraceId int, sql nvarchar(max))");
+
             var result = Program.Main(new string[] {
                     "--batchsize","10000",
-                    "--tablename","TraceEvents",
+                    "--tablename","TestAppExecutes",
                     "--connection", connectionString,
                     "--filename", samplexmlfile,
                     "--fields",  "{100}","sql_text",
@@ -48,6 +52,7 @@ namespace XEvent.App.Tests
             if (!string.IsNullOrWhiteSpace(xr))
                 throw new Exception(xr);
 
+            new SqlConnection(connectionString).Query("drop table if exists TestAppExecutes");
 
         }
         [Test]
@@ -65,7 +70,7 @@ namespace XEvent.App.Tests
                     "--tablename","Foo",
                     "--connection", connectionString,
                     "--filename", samplexmlfile,
-                    "--fields",string.Join(",",new string[] { "page_faults", "cpu_time", "sql_text", "duration" }) });
+                    "--fields","page_faults", "cpu_time", "sql_text", "duration"  });
 
             await RunExe;
     

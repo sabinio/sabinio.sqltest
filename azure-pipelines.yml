@@ -1,0 +1,19 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  name: SMSHome
+
+steps:
+- task: DownloadPipelineArtifact@2
+  inputs:
+    buildType: 'specific'
+    project: 'a28fae58-2b40-4449-a7e7-680ac9ecedc7'
+    definition: '272'
+    buildVersionToDownload: 'latest'
+    targetPath: '$(Build.ArtifactStagingDirectory)'

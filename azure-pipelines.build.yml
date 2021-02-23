@@ -59,7 +59,6 @@ stages:
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
 
-        
     - task: DotNetCoreCLI@2
       displayName: dotnet publish
       inputs:
@@ -77,3 +76,30 @@ stages:
         artifactName: XEventApp$(TargetPlatform)
       condition: ${{parameters.publish}}
       
+    - task: PowerShell@2
+      displayName: Package Nuget Packages
+      inputs:
+        filePath: '.build\pipeline.ps1'
+        arguments: '-package'
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Nuget Package Artifacts
+      inputs:
+        targetPath: out\SabinIO.Sql.Parse
+        artifactName: SabinIO.Sql.Parse
+      condition: ${{parameters.publish}}
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Nuget Package Artifacts
+      inputs:
+        targetPath: out\SabinIO.SqlTest
+        artifactName: SabinIO.SqlTest
+      condition: ${{parameters.publish}}
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Nuget Package Artifacts
+      inputs:
+        targetPath: out\SabinIO.xEvent.Lib
+        artifactName: SabinIO.xEvent.Lib
+      condition: ${{parameters.publish}}
+

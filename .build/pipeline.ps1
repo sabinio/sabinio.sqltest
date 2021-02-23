@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param
-($Configuration)
+($Configuration="debug")
 DynamicParam {          
     $RuntimeParamDic = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
     $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
@@ -19,9 +19,9 @@ DynamicParam {
 }
 process {
 
-    if ($psboundparameters["build"]) { & $psscriptroot\build.ps1   }
+    if ($psboundparameters["build"]) { & $psscriptroot\build.ps1  -Configuration $Configuration }
 
-    if ($psboundparameters["package"]){ & $psscriptroot\package.ps1   }
+    if ($psboundparameters["package"]){ & $psscriptroot\package.ps1 -Configuration $Configuration   }
 
     if ($psboundparameters["test"]){ & $psscriptroot\test.ps1   }
 

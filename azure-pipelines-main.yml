@@ -1,0 +1,68 @@
+
+trigger:
+- master
+
+variables:
+- template: azure-pipelines.variables.yml
+
+stages:
+- template: azure-pipelines.build.yml
+  parameters:
+    publish: false
+
+- stage: PublishToGitHub
+  condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  jobs: 
+  - deployment: PublishGitHubReleaseJob
+    environment: sqltest_prod
+    strategy:
+      runOnce:
+        deploy:   
+          steps:    
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+
+          - task: GitHubRelease@1
+            inputs:
+              gitHubConnection: 'GitHub.com'
+              repositoryName: '$(Build.Repository.Name)'
+              action: 'edit'
+              target: '$(Build.SourceVersion)'
+              tag: '$(Version)'
+              title: 'Beta'
+              assets: '$(Build.ArtifactStagingDirectory)/**/*'
+              assetUploadMode: 'replace'
+              isPreRelease: true
+              addChangeLog: true
+
+
+- stage: PublishToNuget
+  condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  jobs: 
+  - deployment: PublishToNugetJob
+    environment: sqltest-nuget
+    strategy:
+      runOnce:
+        deploy:   
+          steps:    
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+
+          - task: GitHubRelease@1
+            inputs:
+              gitHubConnection: 'GitHub.com'
+              repositoryName: '$(Build.Repository.Name)'
+              action: 'edit'
+              target: '$(Build.SourceVersion)'
+              tag: '$(Version)'
+              title: 'Beta'
+              assets: '$(Build.ArtifactStagingDirectory)/**/*'
+              assetUploadMode: 'replace'
+              isPreRelease: true
+              addChangeLog: true

@@ -1,8 +1,6 @@
 
-trigger:
-- master
-pr:
-- master
+parameters :
+  publish: false
 
 variables:
   solution: '**/*.sln'
@@ -78,36 +76,11 @@ stages:
         arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(TargetPlatform) -p:PublishSingleFile=true -p:SelfContained=true'
         zipAfterPublish: false
         modifyOutputPath: true
+      condition: ${{parameters.publish}}
 
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
         artifactName: XEventApp$(TargetPlatform)
-
-- stage: PublishToGitHub
-  condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
-  jobs: 
-  - deployment: PublishGitHubReleaseJob
-    environment: sqltest_prod
-    strategy:
-      runOnce:
-        deploy:   
-          steps:    
-          - download: none
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              targetPath: '$(Build.ArtifactStagingDirectory)'
-
-          - task: GitHubRelease@1
-            inputs:
-              gitHubConnection: 'GitHub.com'
-              repositoryName: '$(Build.Repository.Name)'
-              action: 'edit'
-              target: '$(Build.SourceVersion)'
-              tag: '0.0.1-beta'
-              title: 'Beta'
-              assets: '$(Build.ArtifactStagingDirectory)/**/*'
-              assetUploadMode: 'replace'
-              isPreRelease: true
-              addChangeLog: false
+      condition: ${{parameters.publish}}
+      

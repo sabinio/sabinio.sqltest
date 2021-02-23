@@ -1,0 +1,8 @@
+
+pr:
+- master
+
+stages:
+- template: azure-pipelines.build.yml
+  parameters:
+    publish: false

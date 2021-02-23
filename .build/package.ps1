@@ -1,5 +1,5 @@
 
-param ($rootpath, $outpath, $configuration)
+param ($rootpath, $outpath, $configuration="debug")
 
 Push-Location $rootpath
 try{

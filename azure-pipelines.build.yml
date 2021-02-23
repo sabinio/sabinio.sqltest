@@ -6,6 +6,9 @@ parameters :
 
 jobs:
 - job: BuildAndTest 
+  pool:
+    vmImage: 'windows-latest'
+
   strategy:
     matrix:
       linux:

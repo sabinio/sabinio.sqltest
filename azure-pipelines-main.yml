@@ -63,7 +63,8 @@ stages:
           - task: PowerShell@2
             displayName: Package Nuget Packages
             inputs:
-              inline: 'dir $(Build.ArtifactStagingDirectory)'
+              targetType: 'inline'
+              script: 'dir $(Build.ArtifactStagingDirectory)'
 
           - task: PowerShell@2
             displayName: Package Nuget Packages

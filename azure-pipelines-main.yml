@@ -8,9 +8,11 @@ variables:
     publish: true
 
 stages:
-- template: azure-pipelines.build.yml
-  parameters:
-    publish: false
+- stage: build
+  jobs:
+  - template: azure-pipelines.build.yml
+    parameters:
+      publish: false
 
 - stage: PublishToGitHub
   condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
@@ -43,6 +45,7 @@ stages:
 
 - stage: PublishToNuget
   condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  dependsOn
   jobs: 
   - deployment: PublishToNugetJob
     environment: sqltest-nuget

@@ -60,11 +60,30 @@ stages:
               buildType: 'current'
               targetPath: '$(Build.ArtifactStagingDirectory)'
 
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              patterns: "*.*"
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              patterns: "**/*.*"
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              patterns: "*"
+
           - task: PowerShell@2
             displayName: Package Nuget Packages
             inputs:
               targetType: 'inline'
               script: 'dir $(Build.ArtifactStagingDirectory)'
+
 
           - task: PowerShell@2
             displayName: Package Nuget Packages

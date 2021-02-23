@@ -7,7 +7,7 @@ parameters :
 jobs:
 - job: BuildAndTest 
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'ubuntu-latest'
 
   strategy:
     matrix:
@@ -99,5 +99,13 @@ jobs:
     inputs:
       targetPath: out\SabinIO.xEvent.Lib
       artifactName: SabinIO.xEvent.Lib
+    condition: and(${{ parameters.publish }},eq(variables.Targetplatform,'win-x64'))
+
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish .Build Package Artifacts
+    inputs:
+      targetPath: src\.build
+      artifactName: .build
     condition: and(${{ parameters.publish }},eq(variables.Targetplatform,'win-x64'))
 

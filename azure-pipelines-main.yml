@@ -63,5 +63,10 @@ stages:
           - task: PowerShell@2
             displayName: Package Nuget Packages
             inputs:
+              inline: 'dir $(Build.ArtifactStagingDirectory)'
+
+          - task: PowerShell@2
+            displayName: Package Nuget Packages
+            inputs:
               filePath: '$(Build.ArtifactStagingDirectory)\.build\pipeline.ps1'
               arguments: '-publish -apikey $(apikey)'

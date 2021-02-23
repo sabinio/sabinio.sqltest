@@ -80,7 +80,7 @@ stages:
       displayName: Package Nuget Packages
       inputs:
         filePath: '.build\pipeline.ps1'
-        arguments: '-package'
+        arguments: '-package -configuration $(buildConfiguration)'
 
     - task: PublishPipelineArtifact@1
       displayName: Publish Nuget Package Artifacts

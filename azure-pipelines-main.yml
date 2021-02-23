@@ -16,7 +16,7 @@ stages:
 
 - stage: PublishToGitHub
   dependsOn: build
-  condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  condition:  and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs: 
   - deployment: PublishGitHubReleaseJob
     environment: sqltest_prod
@@ -45,7 +45,7 @@ stages:
 
 
 - stage: PublishToNuget
-  condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  condition:  and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn: build
   jobs: 
   - deployment: PublishToNugetJob

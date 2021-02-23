@@ -1,9 +1,8 @@
 
 parameters :
-  publish: false
-
-variables:
-- template: azure-pipelines.variables.yml
+- name: publish
+  type: boolean 
+  default: false
 
 stages:
 - stage: build

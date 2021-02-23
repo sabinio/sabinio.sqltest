@@ -82,7 +82,7 @@ stages:
             displayName: Package Nuget Packages
             inputs:
               targetType: 'inline'
-              script: 'dir $(Build.ArtifactStagingDirectory)'
+              script: 'get-childitem $(Build.ArtifactStagingDirectory) -recurse'
 
 
           - task: PowerShell@2
@@ -90,3 +90,4 @@ stages:
             inputs:
               filePath: '$(Build.ArtifactStagingDirectory)\.build\pipeline.ps1'
               arguments: '-publish -apikey $(apikey)'
+            condition: false

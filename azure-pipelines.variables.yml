@@ -1,0 +1,10 @@
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  NUGET_PACKAGES: $(build.SourcesDirectory)\packages
+  Version: "$(BaseVersion).$(MinorVersion)-beta" 
+  BaseVersion: "0.0"
+  MinorVersion: $[counter(variables['BaseVersion'],1)]
+  

@@ -4,97 +4,97 @@ parameters :
   type: boolean 
   default: false
 
+jobs:
+- job: BuildAndTest 
+  strategy:
+    matrix:
+      linux:
+        TargetPlatform: linux-x64
+      windows:
+        TargetPlatform: win-x64
+      osx:
+        TargetPlatform: osx-x64
+  steps:
+  - task: Cache@2
+    inputs:
+      key: 'nuget | "$(TargetPlatform)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+      path: '$(NUGET_PACKAGES)'
+      restoreKeys: |
+        nuget | "$(TargetPlatform)"
+        nuget
+    displayName: Cache Nuget packages
+    enabled: false
 
-job: BuildAndTest 
-strategy:
-  matrix:
-    linux:
-      TargetPlatform: linux-x64
-    windows:
-      TargetPlatform: win-x64
-    osx:
-      TargetPlatform: osx-x64
-steps:
-- task: Cache@2
-  inputs:
-    key: 'nuget | "$(TargetPlatform)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
-    path: '$(NUGET_PACKAGES)'
-    restoreKeys: |
-      nuget | "$(TargetPlatform)"
-      nuget
-  displayName: Cache Nuget packages
-  enabled: false
+  - task: UseDotNet@2
+    displayName: Use Dot version
+    inputs:
+      packageType: 'sdk'
+      version: '5.x'
+      performMultiLevelLookup: true
+    enabled: false
 
-- task: UseDotNet@2
-  displayName: Use Dot version
-  inputs:
-    packageType: 'sdk'
-    version: '5.x'
-    performMultiLevelLookup: true
-  enabled: false
+  - task: DotNetCoreCLI@2
+    displayName: Restore Nuget Packages
+    inputs:
+      command: 'restore'
+      projects: '**/*.sln'
+      verbosityRestore: 'Normal'
 
-- task: DotNetCoreCLI@2
-  displayName: Restore Nuget Packages
-  inputs:
-    command: 'restore'
-    projects: '**/*.sln'
-    verbosityRestore: 'Normal'
+  - task: DotNetCoreCLI@2
+    displayName: Build
+    inputs:
+      command: 'build'
+      projects: '**/*.sln'
+      arguments: '--configuration $(buildConfiguration) /m:4 '
+      includeNuGetOrg: true
 
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    command: 'build'
-    projects: '**/*.sln'
-    arguments: '--configuration $(buildConfiguration) /m:4 '
-    includeNuGetOrg: true
+  - task: VSTest@2
+    displayName: Test
+    inputs:
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
 
-- task: VSTest@2
-  displayName: Test
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+  - task: DotNetCoreCLI@2
+    displayName: dotnet publish
+    inputs:
+      command: 'publish'
+      publishWebProjects: false
+      projects: '**/SabinIO.xEvent.App.csproj'
+      arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(TargetPlatform) -p:PublishSingleFile=true -p:SelfContained=true'
+      zipAfterPublish: false
+      modifyOutputPath: true
+    condition: ${{parameters.publish}}
 
-- task: DotNetCoreCLI@2
-  displayName: dotnet publish
-  inputs:
-    command: 'publish'
-    publishWebProjects: false
-    projects: '**/SabinIO.xEvent.App.csproj'
-    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(TargetPlatform) -p:PublishSingleFile=true -p:SelfContained=true'
-    zipAfterPublish: false
-    modifyOutputPath: true
-  condition: ${{parameters.publish}}
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)
+      artifactName: XEventApp$(TargetPlatform)
+    condition: ${{parameters.publish}}
+    
+  - task: PowerShell@2
+    displayName: Package Nuget Packages
+    inputs:
+      filePath: '.build\pipeline.ps1'
+      arguments: '-package -configuration $(buildConfiguration)'
 
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: $(Build.ArtifactStagingDirectory)
-    artifactName: XEventApp$(TargetPlatform)
-  condition: ${{parameters.publish}}
-  
-- task: PowerShell@2
-  displayName: Package Nuget Packages
-  inputs:
-    filePath: '.build\pipeline.ps1'
-    arguments: '-package -configuration $(buildConfiguration)'
+  - task: PublishPipelineArtifact@1
+    displayName: Publish Nuget Package Artifacts
+    inputs:
+      targetPath: out\SabinIO.Sql.Parse
+      artifactName: SabinIO.Sql.Parse
+    condition: ${{and(parameters.publish,eq(variables.Targetplatform,'win-x64')) }}
 
-- task: PublishPipelineArtifact@1
-  displayName: Publish Nuget Package Artifacts
-  inputs:
-    targetPath: out\SabinIO.Sql.Parse
-    artifactName: SabinIO.Sql.Parse
-  condition: ${{and(parameters.publish,eq(variables.Targetplatform,'win-x64')) }}
+  - task: PublishPipelineArtifact@1
+    displayName: Publish Nuget Package Artifacts
+    inputs:
+      targetPath: out\SabinIO.SqlTest
+      artifactName: SabinIO.SqlTest
+    condition: ${{and(parameters.publish,eq(variables.Targetplatform,'win-x64')) }}
 
-- task: PublishPipelineArtifact@1
-  displayName: Publish Nuget Package Artifacts
-  inputs:
-    targetPath: out\SabinIO.SqlTest
-    artifactName: SabinIO.SqlTest
-  condition: ${{and(parameters.publish,eq(variables.Targetplatform,'win-x64')) }}
-
-- task: PublishPipelineArtifact@1
-  displayName: Publish Nuget Package Artifacts
-  inputs:
-    targetPath: out\SabinIO.xEvent.Lib
-    artifactName: SabinIO.xEvent.Lib
-  condition: ${{and(parameters.publish,eq(variables.Targetplatform,'win-x64')) }}
+  - task: PublishPipelineArtifact@1
+    displayName: Publish Nuget Package Artifacts
+    inputs:
+      targetPath: out\SabinIO.xEvent.Lib
+      artifactName: SabinIO.xEvent.Lib
+    condition: ${{and(parameters.publish,eq(variables.Targetplatform,'win-x64')) }}
 

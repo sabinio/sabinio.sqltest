@@ -12,7 +12,7 @@ stages:
   jobs:
   - template: azure-pipelines.build.yml
     parameters:
-      publish: false
+      publish: true
 
 - stage: PublishToGitHub
   dependsOn: build

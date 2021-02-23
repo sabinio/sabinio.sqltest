@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param
-($Configuration="debug")
+($Configuration="debug"
+,$apiKey)
 DynamicParam {          
     $RuntimeParamDic = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
     $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]

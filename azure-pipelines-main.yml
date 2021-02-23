@@ -4,6 +4,8 @@ trigger:
 
 variables:
 - template: azure-pipelines.variables.yml
+  parameters:
+    publish: true
 
 stages:
 - template: azure-pipelines.build.yml
@@ -54,15 +56,8 @@ stages:
               buildType: 'current'
               targetPath: '$(Build.ArtifactStagingDirectory)'
 
-          - task: GitHubRelease@1
+          - task: PowerShell@2
+            displayName: Package Nuget Packages
             inputs:
-              gitHubConnection: 'GitHub.com'
-              repositoryName: '$(Build.Repository.Name)'
-              action: 'edit'
-              target: '$(Build.SourceVersion)'
-              tag: '$(Version)'
-              title: 'Beta'
-              assets: '$(Build.ArtifactStagingDirectory)/**/*'
-              assetUploadMode: 'replace'
-              isPreRelease: true
-              addChangeLog: true
+              filePath: '$(Build.ArtifactStagingDirectory)\.build\pipeline.ps1'
+              arguments: '-publish -apikey $(apikey)'

@@ -16,4 +16,6 @@ steps:
     project: 'a28fae58-2b40-4449-a7e7-680ac9ecedc7'
     definition: '272'
     buildVersionToDownload: 'latest'
+    allowPartiallySucceededBuilds: true
+    allowFailedBuilds: true
     targetPath: '$(Build.ArtifactStagingDirectory)'

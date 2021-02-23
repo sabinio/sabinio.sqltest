@@ -153,8 +153,7 @@ namespace SabinIO.SqlTest
 
         public void LoadHashes(string TraceConnectionStr, IEnumerable<(int eventid, long query_hash, long query_plan_hash)> hashes)
         {
-            var fields = new string[] { "eventid", "query_hash", "query_plan_hash" };
-
+         
             var f = new DBReader<(int eventid, long query_hash, long query_plan_hash)>(hashes.ToList(),
                  ((int eventid, long query_hash, long query_plan_hash) data, int key) =>
                 key switch
@@ -166,8 +165,6 @@ namespace SabinIO.SqlTest
                 },
                  null);
             
-            ;
-
             using SqlConnection StoreConnection = new SqlConnection(TraceConnectionStr) ;
             using SqlBulkCopy bc = new SqlBulkCopy(StoreConnection) ;
             StoreConnection.Open();
@@ -286,11 +283,17 @@ if @filename is null
 else
 select event_data from sys.fn_xe_file_target_read_file(@filename,null,null,null)
 ", new { SessionName = XEventSessionName });
-            var x = from ev in events
-                    select new Statement(ev.Attribute("name").Value,
-                              ev.Elements("action").Union(ev.Elements("data")).ToDictionary(_ => _.Attribute("name").Value, _ => _.Element("value").Value));
 
-            return x;
+            return GetStatementsFromEvents(events);
+
+        }
+
+        private static IEnumerable<Statement> GetStatementsFromEvents(IEnumerable<XElement> events)
+        {
+            return from ev in events
+                   select new Statement(ev.Attribute("name").Value,
+                   Convert.ToDateTime(ev.Attribute("timestamp").Value),
+                             ev.Elements("action").Union(ev.Elements("data")).ToDictionary(_ => _.Attribute("name").Value, _ => _.Element("value").Value));
         }
 
         private IEnumerable<Statement> GetEventsFromRingBuffer()
@@ -305,38 +308,27 @@ and xet.target_name != 'ring_buffer'
 
 ";
             var s = cmd.ExecuteXmlReader();
-            //.GetStream(0);
+            
             XElement eventXml = XElement.Load(s);
-            var x = from ev in eventXml.Descendants("event")
-                    select new Statement(ev.Attribute("name").Value,
-                              ev.Elements("action").Union(ev.Elements("data")).ToDictionary(_ => _.Attribute("name").Value, _ => _.Element("value").Value));
-
-            return x;
+            return GetStatementsFromEvents(eventXml.Descendants("event"));
         }
 
         public void GetSessions()
         {
             using (MonitorConnection = new SqlConnection(ConnectionStr))
             {
-
                 MonitorConnection.Open();
-
-                    
+    
                 var t = new XEStore(new SqlStoreConnection(MonitorConnection));
 
                 var sessions = t.Sessions.ToList() ;
-
             }
         }
         public void StopTrace(bool drop= true)
         {
-
             using (MonitorConnection = new SqlConnection(ConnectionStr))
             {
-
                 MonitorConnection.Open();
-
-
                 var t = new XEStore(new SqlStoreConnection(MonitorConnection));
 
                 Session XEventSession = t.Sessions.Where(s => s.Name == XEventSessionName).FirstOrDefault();
@@ -349,7 +341,7 @@ and xet.target_name != 'ring_buffer'
         }
 
 
-        public IEnumerable<(int eventid, int logical, int physical, int cpu, int duration)> RunQueries(List<(string sql, int eventId)> queries,TextWriter log)
+        public IEnumerable<SimpleStatement> RunQueries(List<(string sql, int eventId)> queries,TextWriter log)
         {
             InitSQL(new string[] { "rpc_completed" },log:log);
             Dictionary<int, Exception> errors = new Dictionary<int, Exception>();
@@ -378,14 +370,14 @@ and xet.target_name != 'ring_buffer'
             System.Threading.Thread.Sleep(10000);
             var t = queries.Select(q2 => q2.eventId).Distinct();
             var rawAfterStatements = Statements().Where(c => !c["sql_text"].EndsWith("--ignore") && !c["sql_text"].EndsWith("@@spid")).ToList();
-            var afterStatements = rawAfterStatements.Select(c =>
-                (
-                eventid: BitConverter.ToInt32(ContextInfoByteArray(c["context_info"])),
-                logical: Convert.ToInt32(c["logical_reads"]),
-                physical: Convert.ToInt32(c["physical_reads"]),
-                cpu: Convert.ToInt32(c["cpu_time"]),
-                duration: Convert.ToInt32(c["duration"])
-                )); ;
+            var afterStatements = rawAfterStatements.Select(c => new SimpleStatement(
+                BitConverter.ToInt32(ContextInfoByteArray(c["context_info"])),
+                c.Timestamp,
+                Convert.ToInt32(c["logical_reads"]),
+                Convert.ToInt32(c["physical_reads"]),
+                Convert.ToInt32(c["cpu_time"]),
+                Convert.ToInt32(c["duration"])
+                ));
 
 
             StopTrace();

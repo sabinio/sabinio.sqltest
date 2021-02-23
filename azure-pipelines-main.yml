@@ -15,6 +15,7 @@ stages:
       publish: false
 
 - stage: PublishToGitHub
+  dependsOn: build
   condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
   jobs: 
   - deployment: PublishGitHubReleaseJob
@@ -45,7 +46,7 @@ stages:
 
 - stage: PublishToNuget
   condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
-  dependsOn
+  dependsOn: build
   jobs: 
   - deployment: PublishToNugetJob
     environment: sqltest-nuget

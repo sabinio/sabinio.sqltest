@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param
-()
+($Configuration="debug")
 DynamicParam {          
     $RuntimeParamDic = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
     $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
@@ -15,18 +15,16 @@ DynamicParam {
         $RuntimeParam = New-Object System.Management.Automation.RuntimeDefinedParameter($switchname, [switch], $AttribColl)
         $RuntimeParamDic.Add($switchname, $RuntimeParam)
     }
-  #  $AttribColl.Add((New-Object System.Management.Automation.ValidateSetAttribute(($files | Select-Object -ExpandProperty baseName))));
-  #  $RuntimeParam = New-Object System.Management.Automation.RuntimeDefinedParameter("simon", [string], $AttribColl)
-  #  $RuntimeParamDic.Add("simon", $RuntimeParam)
-    
     return  $RuntimeParamDic
 }
 process {
 
-    if ($psboundparameters["build"]) { & $psscriptroot\build.ps1   }
+    if ($psboundparameters["build"]) { & $psscriptroot\build.ps1  -Configuration $Configuration }
 
-    if ($psboundparameters["package"]){ & $psscriptroot\package.ps1   }
+    if ($psboundparameters["package"]){ & $psscriptroot\package.ps1 -Configuration $Configuration   }
 
     if ($psboundparameters["test"]){ & $psscriptroot\test.ps1   }
+
+    if ($psboundparameters["publish"]){ & $psscriptroot\publish.ps1 -Configuration $Configuration  }
 
 }

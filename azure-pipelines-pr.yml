@@ -1,0 +1,11 @@
+trigger: none
+pr:
+- master
+
+variables:
+- template: azure-pipelines.variables.yml
+
+stages:
+- template: azure-pipelines.build.yml
+  parameters:
+    publish: false

@@ -1,18 +1,9 @@
 
-trigger:
-- master
-pr:
-- master
+parameters :
+- name: publish
+  type: boolean 
+  default: false
 
-variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-  NUGET_PACKAGES: $(build.SourcesDirectory)\packages
-  Version: "$(BaseVersion).$(MinorVersion)-beta" 
-  BaseVersion: "0.0"
-  MinorVersion: $[counter(variables['BaseVersion'],1)]
-  
 stages:
 - stage: build
   pool:
@@ -68,7 +59,6 @@ stages:
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
 
-        
     - task: DotNetCoreCLI@2
       displayName: dotnet publish
       inputs:
@@ -78,36 +68,38 @@ stages:
         arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -r $(TargetPlatform) -p:PublishSingleFile=true -p:SelfContained=true'
         zipAfterPublish: false
         modifyOutputPath: true
+      condition: ${{parameters.publish}}
 
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
         artifactName: XEventApp$(TargetPlatform)
+      condition: ${{parameters.publish}}
+      
+    - task: PowerShell@2
+      displayName: Package Nuget Packages
+      inputs:
+        filePath: '.build\pipeline.ps1'
+        arguments: '-package -configuration $(buildConfiguration)'
 
-- stage: PublishToGitHub
-  condition:  eq(variables['Build.SourceBranch'], 'refs/heads/master')
-  jobs: 
-  - deployment: PublishGitHubReleaseJob
-    environment: sqltest_prod
-    strategy:
-      runOnce:
-        deploy:   
-          steps:    
-          - download: none
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              targetPath: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Nuget Package Artifacts
+      inputs:
+        targetPath: out\SabinIO.Sql.Parse
+        artifactName: SabinIO.Sql.Parse
+      condition: ${{parameters.publish}}
 
-          - task: GitHubRelease@1
-            inputs:
-              gitHubConnection: 'GitHub.com'
-              repositoryName: '$(Build.Repository.Name)'
-              action: 'edit'
-              target: '$(Build.SourceVersion)'
-              tag: '0.0.1-beta'
-              title: 'Beta'
-              assets: '$(Build.ArtifactStagingDirectory)/**/*'
-              assetUploadMode: 'replace'
-              isPreRelease: true
-              addChangeLog: false
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Nuget Package Artifacts
+      inputs:
+        targetPath: out\SabinIO.SqlTest
+        artifactName: SabinIO.SqlTest
+      condition: ${{parameters.publish}}
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Nuget Package Artifacts
+      inputs:
+        targetPath: out\SabinIO.xEvent.Lib
+        artifactName: SabinIO.xEvent.Lib
+      condition: ${{parameters.publish}}
+

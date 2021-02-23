@@ -105,7 +105,7 @@ jobs:
   - task: PublishPipelineArtifact@1
     displayName: Publish .Build Package Artifacts
     inputs:
-      targetPath: src\.build
+      targetPath: .build
       artifactName: .build
     condition: and(${{ parameters.publish }},eq(variables.Targetplatform,'win-x64'))
 

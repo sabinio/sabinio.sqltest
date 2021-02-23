@@ -16,7 +16,6 @@ steps:
     project: 'a28fae58-2b40-4449-a7e7-680ac9ecedc7'
     definition: '272'
     buildVersionToDownload: 'specific'
-    artifactName: '.build'
     pipelineId: '7700'
     itemPattern: '**/*'
     targetPath: '$(Build.ArtifactStagingDirectory)'

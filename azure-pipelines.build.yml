@@ -82,19 +82,19 @@ jobs:
     inputs:
       targetPath: out\SabinIO.Sql.Parse
       artifactName: SabinIO.Sql.Parse
-    condition: and(parameters.publish,eq(variables.Targetplatform,'win-x64'))
+    condition: and(${{ parameters.publish }},eq(variables.Targetplatform,'win-x64'))
 
   - task: PublishPipelineArtifact@1
     displayName: Publish Nuget Package Artifacts
     inputs:
       targetPath: out\SabinIO.SqlTest
       artifactName: SabinIO.SqlTest
-    condition: and(parameters.publish,eq(variables.Targetplatform,'win-x64'))
+    condition: and(${{ parameters.publish }},eq(variables.Targetplatform,'win-x64'))
 
   - task: PublishPipelineArtifact@1
     displayName: Publish Nuget Package Artifacts
     inputs:
       targetPath: out\SabinIO.xEvent.Lib
       artifactName: SabinIO.xEvent.Lib
-    condition: and(parameters.publish,eq(variables.Targetplatform,'win-x64'))
+    condition: and(${{ parameters.publish }},eq(variables.Targetplatform,'win-x64'))
 

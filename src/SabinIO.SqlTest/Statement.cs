@@ -9,11 +9,13 @@ namespace SabinIO.SqlTest
         public string name;
         public readonly IDictionary<string, string> Fields = new Dictionary<string, string>();
         public  IDictionary<string, string> fields { get { return Fields; } }
+        public DateTime Timestamp;
 
-        public Statement (string name, IDictionary<string,string> fields)
+        public Statement (string name, DateTime timestamp, IDictionary<string,string> fields)
         {
             this.name = name;
             Fields = fields;
+            Timestamp = timestamp;
         }
         public int Length => Fields.Count;
 

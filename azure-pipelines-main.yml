@@ -82,4 +82,5 @@ stages:
             inputs:
               filePath: '$(Build.ArtifactStagingDirectory)/.build/pipeline.ps1'
               arguments: '-publish -apikey $(apikey) -outpath $(Build.ArtifactStagingDirectory)'
+              pwsh: true
             

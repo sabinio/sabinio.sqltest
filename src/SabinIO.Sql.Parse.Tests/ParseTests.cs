@@ -195,6 +195,21 @@ exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 a
             Assert.That(cmd.Parameters["@User"].SqlDbType, Is.EqualTo(SqlDbType.VarChar));
 
         }
+
+        
+        [Test]
+        public void ParsingExecWithOutParams()
+        {
+            var query = @"exec dbo.SomeProc";
+
+            var stmt = Parse.GetStatement(query);
+            Assert.That(stmt.statement, Is.EqualTo("dbo.SomeProc"));
+            Assert.That(stmt.parameters.Count, Is.EqualTo(0));
+
+            var cmd = Parse.GetSqlCommand(query);
+            Assert.That(cmd.CommandText, Is.EqualTo("dbo.SomeProc"));
+
+        }
         [Test]
         [TestCase("bit", SqlDbType.Bit, 0, 0)]
         [TestCase("tinyint", SqlDbType.TinyInt, 0, 0)]

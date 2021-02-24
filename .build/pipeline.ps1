@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param
 ($Configuration="debug"
-,$apiKey)
+,$apiKey
+,$outpath = "./out")
 DynamicParam {          
     $RuntimeParamDic = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
     $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
@@ -22,10 +23,10 @@ process {
 
     if ($psboundparameters["build"]) { & $psscriptroot\build.ps1  -Configuration $Configuration }
 
-    if ($psboundparameters["package"]){ & $psscriptroot\package.ps1 -Configuration $Configuration   }
+    if ($psboundparameters["package"]){ & $psscriptroot\package.ps1 -Configuration $Configuration    -outpath $outpath }
 
     if ($psboundparameters["test"]){ & $psscriptroot\test.ps1   }
 
-    if ($psboundparameters["publish"]){ & $psscriptroot\publish.ps1 -Configuration $Configuration  }
+    if ($psboundparameters["publish"]){ & $psscriptroot\publish.ps1 -Configuration $Configuration  -outpath $outpath  -apikey $apikey}
 
 }

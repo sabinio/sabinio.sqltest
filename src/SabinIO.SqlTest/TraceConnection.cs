@@ -107,7 +107,7 @@ namespace SabinIO.SqlTest
             //query_post_execution_showplan
             InitSQL(new string[] { "sql_statement_completed", "sp_statement_completed" },
                             new string[] { "query_hash_signed", "plan_handle", "query_plan_hash_signed" ,"context_info"},
-                            new string[] { " [sqlserver].[query_hash_signed]<>(0)" }, 
+                            new List<string> { " [sqlserver].[query_hash_signed]<>(0)" }, 
                             log);
 
             Dictionary<int, Exception> errors = new Dictionary<int, Exception>();

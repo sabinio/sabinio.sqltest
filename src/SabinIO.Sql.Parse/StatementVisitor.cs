@@ -117,11 +117,11 @@ namespace SabinIO.Sql
 
         private void GetProcExecute(ExecuteStatement node)
         {
+            var proc = (node.ExecuteSpecification.ExecutableEntity as ExecutableProcedureReference);
+            statement = String.Join('.', proc.ProcedureReference.ProcedureReference.Name.Identifiers.Select(c=>c.Value));
             for (int i = 0; i < node.ExecuteSpecification.ExecutableEntity.Parameters.Count; i++)
             {
                 var execparam = node.ExecuteSpecification.ExecutableEntity.Parameters[i];
-                var proc = (node.ExecuteSpecification.ExecutableEntity as ExecutableProcedureReference);
-                statement = String.Join('.', proc.ProcedureReference.ProcedureReference.Name.Identifiers.Select(c=>c.Value));
                 switch (i)
                 {
 

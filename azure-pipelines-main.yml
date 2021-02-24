@@ -55,28 +55,12 @@ stages:
         deploy:   
           steps:    
           - download: none
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              targetPath: '$(Build.ArtifactStagingDirectory)'
 
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: 'current'
               targetPath: '$(Build.ArtifactStagingDirectory)'
-              patterns: "*.*"
-
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              targetPath: '$(Build.ArtifactStagingDirectory)'
-              patterns: "**/*.*"
-
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              targetPath: '$(Build.ArtifactStagingDirectory)'
-              patterns: "*"
+              patterns: '**/*'
 
           - task: PowerShell@2
             displayName: Package Nuget Packages

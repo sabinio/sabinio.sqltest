@@ -91,6 +91,10 @@ namespace SabinIO.Sql
                             {
                                 p.SqlDbType = SqlDbType.DateTime;
                             }
+                            else if (SqlParam.Name.EndsWith("Guid"))
+                            {
+                                p.SqlDbType = SqlDbType.UniqueIdentifier;
+                            }
                             else p.SqlDbType = SqlDbType.Int;
                             p.Value = DBNull.Value;
                         }

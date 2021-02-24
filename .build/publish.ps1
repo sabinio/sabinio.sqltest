@@ -11,6 +11,9 @@ try{
         &dotnet nuget push $package -s "nuget.org" -k $apikey     
     }
 }
+catch{
+    throw
+}
 finally{
     pop-location
 }

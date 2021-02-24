@@ -81,5 +81,5 @@ stages:
             displayName: Package Nuget Packages
             inputs:
               filePath: '$(Build.ArtifactStagingDirectory)/.build/pipeline.ps1'
-              arguments: '-publish -apikey $(apikey)'
+              arguments: '-publish -apikey $(apikey) -outpath $(Build.ArtifactStagingDirectory)'
             

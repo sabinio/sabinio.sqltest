@@ -47,6 +47,8 @@ stages:
 - stage: PublishToNuget
   condition:  and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn: build
+  pool:
+    vmImage: 'windows-latest'
   jobs: 
   - deployment: PublishToNugetJob
     environment: sqltest-nuget
@@ -66,7 +68,7 @@ stages:
               buildType: 'current'
               itemPattern: '**/*'
               artifactName: '.build'
-              targetPath: '$(Build.ArtifactStagingDirectory)\.build'
+              targetPath: '$(Build.ArtifactStagingDirectory)/.build'
 
           - task: PowerShell@2
             displayName: Package Nuget Packages
@@ -78,6 +80,6 @@ stages:
           - task: PowerShell@2
             displayName: Package Nuget Packages
             inputs:
-              filePath: '$(Build.ArtifactStagingDirectory)\.build\pipeline.ps1'
+              filePath: '$(Build.ArtifactStagingDirectory)/.build/pipeline.ps1'
               arguments: '-publish -apikey $(apikey)'
             

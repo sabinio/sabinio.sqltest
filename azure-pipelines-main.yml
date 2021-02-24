@@ -80,4 +80,4 @@ stages:
             inputs:
               filePath: '$(Build.ArtifactStagingDirectory)\.build\pipeline.ps1'
               arguments: '-publish -apikey $(apikey)'
-            condition: false
+            

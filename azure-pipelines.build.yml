@@ -32,7 +32,7 @@ jobs:
     displayName: Use Dot version
     inputs:
       packageType: 'sdk'
-      version: '5.x'
+      version: '6.x'
       performMultiLevelLookup: true
     enabled: false
 
@@ -56,6 +56,10 @@ jobs:
     inputs:
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
+      testAssemblyVer2: |
+        **\*Tests.dll
+        !**\*TestAdapter.dll
+        !**\obj\**
 
   - task: DotNetCoreCLI@2
     displayName: dotnet publish

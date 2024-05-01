@@ -13,6 +13,7 @@ using Dapper;
 using SabinIO.xEvent.Lib;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace SabinIO.xEvent.Lib.Tests
 {
@@ -67,6 +68,7 @@ namespace SabinIO.xEvent.Lib.Tests
 
         }
         [Test]
+        [Category("Integration")]
         public async Task TestXELFileCanBeRead()
         {
             var (rowsread, rowsinserted) = await
@@ -81,17 +83,19 @@ namespace SabinIO.xEvent.Lib.Tests
         }
 
         [Test]
+        [Category("Integration")]
         public void TestErrorNotThrownIfColumnNumbersMatchTargetTable()
         {
-
-            Assert.Throws<InvalidOperationException>(() =>
-                     SetupFileReader("TestErrorNotThrownIfColumnNumbersMatchTargetTable", tableColumns: "uuid uniqueidentifier null")
-                      .ReadAndLoad(new string[] { "uuid" ,"cpu_time"}, new string[] { }, new System.Threading.CancellationToken())
-                      .GetAwaiter().GetResult()
+        var ct = new CancellationToken();
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                   await  SetupFileReader("TestErrorNotThrownIfColumnNumbersMatchTargetTable", tableColumns: "uuid uniqueidentifier null")
+                      .ReadAndLoad(["uuid", "cpu_time"], [], ct)
                   );
         }
 
         [Test]
+        [Category("Integration")]
+
         public async Task MappingColumnsWorks()
         {
             var (rowsread, rowsinserted) = await SetupFileReader("MappingColumnsWorks", tableColumns: "id uniqueidentifier null,event varchar(100)")
@@ -103,16 +107,17 @@ namespace SabinIO.xEvent.Lib.Tests
         }
 
         [Test]
+        [Category("Integration")]
         public void TestErrorThrownIfFieldNotInXELFile()
         {
-            Assert.Throws<InvalidFieldException>(() =>
-               SetupFileReader("TestErrorNotThrownIfColumnNumbersDontMatchTargetTable",tableColumns: "uuid uniqueidentifier null, event_name varchar(100)")
+            Assert.ThrowsAsync<InvalidFieldException>(async () => await
+               SetupFileReader("TestErrorNotThrownIfColumnNumbersDontMatchTargetTable", tableColumns: "uuid uniqueidentifier null, event_name varchar(100)")
                 .ReadAndLoad(new string[] { "id" }, new string[] { }, new System.Threading.CancellationToken())
-                .GetAwaiter().GetResult()
-            );
+               );
         }
 
         [Test]
+        [Category("Integration")]
         public async Task TestCompressionofColumn()
         {
             var (rowsread, rowsinserted) = await
@@ -145,6 +150,7 @@ namespace SabinIO.xEvent.Lib.Tests
         }
 
         [Test]
+        [Category("Integration")]
         public void TestErrorThrownIfInvalidFieldIsUsed()
         {
 

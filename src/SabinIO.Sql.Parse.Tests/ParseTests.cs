@@ -113,6 +113,8 @@ exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 a
         }
 
         [Test]
+        [Category("Integration")]
+
         public void ParsingQueryWithTVPandExecSqlCommand()
         {
             var query = @"
@@ -145,39 +147,41 @@ exec sp_executesql N'select * from @p2 union select * from @p4 where @p3 = @p3 a
 
 
         [Test]
+        [Category("Integration")]
         public void RunATVPCommandToGetTheSample()
         {
 
-            using SqlConnection c = new SqlConnection(TraceConnectionString);
-                c.Query("drop type if exists TestType ");
-                c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
+            using SqlConnection c = new(TraceConnectionString);
+            c.Query("drop type if exists TestType ");
+            c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
 
-                DataTable dt = new DataTable();
-                dt.Columns.Add("intColumn", typeof(int));
-                dt.Columns.Add("varcharColumn", typeof(string));
-                dt.Rows.Add( 100, "simon");
-                dt.Rows.Add(100, "simon");
-                dt.Rows.Add(100, "simon");
-                
-                c.Query("select * from @p2", new { p1 = 100,p2 = dt.AsTableValuedParameter("TestType") ,p3=3333} );;
-           
+            DataTable dt = new DataTable();
+            dt.Columns.Add("intColumn", typeof(int));
+            dt.Columns.Add("varcharColumn", typeof(string));
+            dt.Rows.Add(100, "simon");
+            dt.Rows.Add(100, "simon");
+            dt.Rows.Add(100, "simon");
+
+            c.Query("select * from @p2", new { p1 = 100, p2 = dt.AsTableValuedParameter("TestType"), p3 = 3333 }); ;
+
         }
 
         [Test]
+        [Category("Integration")]
+
         public void RunCommandWithMultipleTVPsToGetTheSample()
         {
+            using SqlConnection c = new(TraceConnectionString);
 
-            using SqlConnection c = new SqlConnection(TraceConnectionString);
-          
-                c.Query("drop type if exists TestType ");
-                c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
+            c.Query("drop type if exists TestType ");
+            c.Query("create type TestType as table (intColumn int,varcharColumn varchar(100))");
 
-                DataTable dt = new DataTable();
-                dt.Columns.Add("intColumn", typeof(int));
-                dt.Columns.Add("varcharColumn", typeof(string));
-                dt.Rows.Add(100, "simon");
-                c.Query("select * from @p2 union select * from @p4 where @p3 = @p3 and @p1 = @p1", new { p1 = 100, p2 = dt.AsTableValuedParameter("TestType"), p3 = 3333 , p4 = dt.AsTableValuedParameter("TestType") }); 
-         
+            DataTable dt = new DataTable();
+            dt.Columns.Add("intColumn", typeof(int));
+            dt.Columns.Add("varcharColumn", typeof(string));
+            dt.Rows.Add(100, "simon");
+            c.Query("select * from @p2 union select * from @p4 where @p3 = @p3 and @p1 = @p1", new { p1 = 100, p2 = dt.AsTableValuedParameter("TestType"), p3 = 3333, p4 = dt.AsTableValuedParameter("TestType") });
+
         }
         [Test]
         public void ParsingStringParams()
@@ -281,10 +285,12 @@ declare @p10 int  set @p10=30396189  declare @p11 int  set @p11=1  exec dbo.Some
             Assert.That(stmt.parameters.Values.Where(p=>p.isOutput).Select(s=>s.Name), Is.EquivalentTo(new string[] {"@Id", "@Ver" }));
          }
         [Test]
+        [Category("Integration")]
+
         public void GetOutputStatement()
         {
 
-            using SqlConnection c = new SqlConnection(TraceConnectionString);
+            using SqlConnection c = new(TraceConnectionString);
             var p = new DynamicParameters();
             p.Add("p1", dbType: DbType.Int32, value: 50, direction: ParameterDirection.InputOutput) ;
             c.Execute(@"set @p1 = @p1*2",p);

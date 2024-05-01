@@ -43,11 +43,11 @@ namespace SabinIO.SqlTest.Tests
         [Test]
         public void EnsureReaderReadsTheRightNumberOfRowsForStruct()
         {
-            List<TestStruct> foo = new List<TestStruct>
+            List<TestStruct> foo = new()
             {
-                new TestStruct() { name = "simon", amount = 1 },
-                new TestStruct() { name = "simon2", amount = 2 },
-                new TestStruct() { name = "simon3", amount = 3 },
+                new() { name = "simon", amount = 1 },
+                new() { name = "simon2", amount = 2 },
+                new() { name = "simon3", amount = 3 },
             };
 
             var reader = new DBReader<TestStruct>(foo,

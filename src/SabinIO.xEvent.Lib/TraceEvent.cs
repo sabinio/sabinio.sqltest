@@ -22,7 +22,7 @@ namespace SabinIO.xEvent.Lib
 
         public static IEnumerable<TraceEvent> LoadFromStream(XmlReader eventList, ILogger log=null)
         {
-            log?.LogDebug("simon @{message}");
+            log?.LogDebug("Loading from stream @{time}", DateTime.UtcNow);
 
             var props = typeof(TraceEvent).GetProperties().ToDictionary(p => p.Name);
 

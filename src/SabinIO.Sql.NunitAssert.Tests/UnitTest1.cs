@@ -48,19 +48,19 @@ namespace SabinIO.Sql.NUnitAssert.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(MisMatch.Where(m => m.column == -1 & m.pk == 2).Count() == 1, "Should find missing row for PK 2");
-                Assert.IsTrue(MisMatch.Where(m => m.column == -1 & m.pk == 2 & m.expectedMissing & !m.actualMissing).Count() == 1, "Should find missing row for PK 2 with expected missing");
-                Assert.IsTrue(MisMatch.Where(m => m.column == -1 & m.pk == 4).Count() == 1, "Should find missing row for PK 4");
-                Assert.IsTrue(MisMatch.Where(m => m.column == -1 & m.pk == 4 & !m.expectedMissing & m.actualMissing).Count() == 1, "Should find missing row for PK 4 with actual missing");
-                Assert.AreEqual(1, MisMatch.Count(m => m.column > -1), "Should only find 1 row is wrong");
+                Assert.That(MisMatch.Where(m => m.column == -1 & m.pk == 2).Count() == 1,Is.True, "Should find missing row for PK 2");
+                Assert.That(MisMatch.Where(m => m.column == -1 & m.pk == 2 & m.expectedMissing & !m.actualMissing).Count() == 1,Is.True, "Should find missing row for PK 2 with expected missing");
+                Assert.That(MisMatch.Where(m => m.column == -1 & m.pk == 4).Count() == 1, Is.True, "Should find missing row for PK 4");
+                Assert.That(MisMatch.Where(m => m.column == -1 & m.pk == 4 & !m.expectedMissing & m.actualMissing).Count() == 1, Is.True     , "Should find missing row for PK 4 with actual missing");
+                Assert.That(1, Is.EqualTo(MisMatch.Count(m => m.column > -1)), "Should only find 1 row is wrong");
 
-                Assert.IsTrue(MisMatch.Any(m => m.column > -1 & m.pk == 3), "Should find row is wrong for PK 3");
+                Assert.That(MisMatch.Any(m => m.column > -1 & m.pk == 3),Is.True, "Should find row is wrong for PK 3");
                 var wrongrow = MisMatch.Where(m => m.column > -1 & m.pk == 3);
-                Assert.AreEqual(1, wrongrow.Count(), "PK Row 3 should have one column wrong");
-                Assert.AreEqual(1, wrongrow.SingleOrDefault().column, "PK Row 3 should have column 1 wrong");
+                Assert.That(1, Is.EqualTo(wrongrow.Count()), "PK Row 3 should have one column wrong");
+                Assert.That(1, Is.EqualTo(wrongrow.SingleOrDefault().column), "PK Row 3 should have column 1 wrong");
 
-                Assert.AreEqual(1, (int)wrongrow.SingleOrDefault().expectedValue, "PK Row 3 should have expectedValue as 1");
-                Assert.AreEqual(2, (int)wrongrow.SingleOrDefault().actualValue, "PK Row 3 should have actualValue as 2");
+                Assert.That(1, Is.EqualTo((int)wrongrow.SingleOrDefault().expectedValue), "PK Row 3 should have expectedValue as 1");
+                Assert.That(2, Is.EqualTo((int)wrongrow.SingleOrDefault().actualValue), "PK Row 3 should have actualValue as 2");
             }
             );
         }

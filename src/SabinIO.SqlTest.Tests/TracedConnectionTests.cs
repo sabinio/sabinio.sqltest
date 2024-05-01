@@ -14,7 +14,9 @@ using SabinIO.SqlTest;
 namespace SabinIO.SqlTest.Tests
 {
     [TestFixture]
-        public class TracedConnectionTests
+    [Category("Integration")]
+
+    public class TracedConnectionTests
     {
  public string connectionString { get { return TestContext.Parameters["TraceConnectionString"]; } }
 
@@ -52,7 +54,9 @@ namespace SabinIO.SqlTest.Tests
 
 
         [Test]
-       // [Ignore("Not working")]
+        // [Ignore("Not working")]
+        [Category("Integration")]
+
         public async Task  LiveStreamCapturesTheEvents()
         {
             using var T = new TracedConnection() { ConnectionStr = connectionString };

@@ -61,5 +61,11 @@ namespace SabinIO.xEvent.Lib.Tests
         public IReadOnlyDictionary<string, object> Fields => this;
 
         public IReadOnlyDictionary<string, object> Actions => this;
+
+        public long XEventStartOffsetInBytes => throw new NotImplementedException();
+
+        public long XEventEndOffsetInBytes => throw new NotImplementedException();
+
+        public long XEventSizeInBytes => throw new NotImplementedException();
     }
 }

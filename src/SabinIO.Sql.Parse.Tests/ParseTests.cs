@@ -299,6 +299,8 @@ declare @p10 int  set @p10=30396189  declare @p11 int  set @p11=1  exec dbo.Some
 
         }
 
+        public override string Description => "Some unknown description";
+
         public override ConstraintResult ApplyTo<TActual>(TActual actual) 
         {
             var x = DataRowComparer.Default;

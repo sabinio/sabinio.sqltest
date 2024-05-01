@@ -26,8 +26,8 @@ namespace SabinIO.Sql.NUnitAssert
 
             Assert.Multiple(() =>
             {
-                Assert.IsNotNull(actualTable, "Table is empty");
-                Assert.AreEqual(expectedTable.Rows.Count, actualTable.Rows.Count, "Number of records in actual and expected tables are different");
+                Assert.That(actualTable,Is.Not.Null, "Table is empty");
+                Assert.That(expectedTable.Rows.Count, Is.EqualTo(actualTable.Rows.Count), "Number of records in actual and expected tables are different");
 
                 int[] columnSize = new int[expectedTable.Columns.Count];//
                 for (int i = 0; i < columnSize.Length; i++)
@@ -52,7 +52,7 @@ namespace SabinIO.Sql.NUnitAssert
                             else
                             {
                                 if (ColumnsToBeDifferent.Contains(item.ColumnName))
-                                    Assert.AreNotEqual(expectedTable.Rows[i][item.ColumnName], actualTable.Rows[i][item.ColumnName], $"Row {i} Column {item.ColumnName} don't match");
+                                    Assert.That(expectedTable.Rows[i][item.ColumnName], Is.Not.EqualTo(actualTable.Rows[i][item.ColumnName]), $"Row {i} Column {item.ColumnName} don't match");
                                 else
                                 {
                                     bool isEqual = true;
@@ -112,15 +112,15 @@ namespace SabinIO.Sql.NUnitAssert
             AssertTableRecordsAreEqualStream(DbDataReader expectedTable, DbDataReader actualTable, string pk, List<string> ColumnsToSkip, List<string> ColumnsToBeDifferent)
         {
 
-            Assert.IsNotNull(actualTable, "Table is empty");
-            Assert.AreEqual(expectedTable.FieldCount, actualTable.FieldCount, "Number of columns in actual and expected tables are different");
+            Assert.That(actualTable,Is.Not.Null, "Table is empty");
+            Assert.That(expectedTable.FieldCount, Is.EqualTo(actualTable.FieldCount), "Number of columns in actual and expected tables are different");
 
             for (int fieldIndex = 0; fieldIndex < expectedTable.FieldCount; fieldIndex++)
             {
 
-                Assert.AreEqual(expectedTable.GetName(fieldIndex), actualTable.GetName(fieldIndex), $"column with index {fieldIndex} name deosn't match");
+                Assert.That(expectedTable.GetName(fieldIndex), Is.EqualTo(actualTable.GetName(fieldIndex)), $"column with index {fieldIndex} name deosn't match");
             }
-            Assert.IsFalse(expectedTable.GetSchemaTable().Columns.Cast<DataColumn>().Any(dc => !actualTable.GetSchemaTable().Columns.Contains(dc.ColumnName)), "Table column names are different");
+            Assert.That(expectedTable.GetSchemaTable().Columns.Cast<DataColumn>().Any(dc => !actualTable.GetSchemaTable().Columns.Contains(dc.ColumnName)), Is.False,"Table column names are different");
 
 
             int[] columnSize = new int[expectedTable.FieldCount];//
@@ -193,25 +193,25 @@ namespace SabinIO.Sql.NUnitAssert
         {
             Assert.Multiple(() =>
             {
-                Assert.IsNotNull(actualTable, "Table is empty");
-                Assert.AreEqual(expectedTable.Columns.Count, actualTable.Columns.Count, "Number of columns in actual and expected tables are different");
+                Assert.That(actualTable, Is.Not.Null, "Table is empty");
+                Assert.That(expectedTable.Columns.Count, Is.EqualTo(actualTable.Columns.Count), "Number of columns in actual and expected tables are different");
 
                 var ColumnsNotInActual = expectedTable.Columns.Cast<DataColumn>().Where(c => !actualTable.Columns.Contains(c.ColumnName)).Select(c => c.ColumnName);
                 var ColumnsNotInExpected = actualTable.Columns.Cast<DataColumn>().Where(c => !expectedTable.Columns.Contains(c.ColumnName)).Select(c => c.ColumnName);
-                Assert.AreEqual(0, ColumnsNotInActual.Count(), $"Columns not in Actual results = {String.Join(",", ColumnsNotInActual)}");
-                Assert.AreEqual(0, ColumnsNotInExpected.Count(), $"Columns not in Expected results = {String.Join(",", ColumnsNotInExpected)}");
+                Assert.That(0, Is.EqualTo(ColumnsNotInActual.Count()), $"Columns not in Actual results = {String.Join(",", ColumnsNotInActual)}");
+                Assert.That(0, Is.EqualTo(ColumnsNotInExpected.Count()), $"Columns not in Expected results = {String.Join(",", ColumnsNotInExpected)}");
 
-                Assert.IsFalse(expectedTable.Columns.Cast<DataColumn>().Any(dc => !actualTable.Columns.Contains(dc.ColumnName)), "Table column names are different");
+                Assert.That(expectedTable.Columns.Cast<DataColumn>().Any(dc => !actualTable.Columns.Contains(dc.ColumnName)), Is.False, "Table column names are different");
 
                 Assert.Multiple(() =>
                 {
                     foreach (DataColumn expectedColumn in expectedTable.Columns)
                     {
                         var actualColumn = actualTable.Columns[expectedColumn.ColumnName];
-                        Assert.AreEqual(expectedColumn.DataType, actualColumn.DataType, $"Data Types should match for column {expectedColumn.ColumnName}");
-                        Assert.AreEqual(expectedColumn.AutoIncrement, actualColumn.AutoIncrement, $"Auto increment should match for column {expectedColumn.ColumnName}");
-                        Assert.AreEqual(expectedColumn.MaxLength, actualColumn.MaxLength, $"Max Length should match for column {expectedColumn.ColumnName}");
-                        Assert.AreEqual(expectedColumn.Ordinal, actualColumn.Ordinal, $"Ordinal Position should match for column {expectedColumn.ColumnName}");
+                        Assert.That(expectedColumn.DataType, Is.EqualTo(actualColumn.DataType), $"Data Types should match for column {expectedColumn.ColumnName}");
+                        Assert.That(expectedColumn.AutoIncrement, Is.EqualTo(actualColumn.AutoIncrement)    , $"Auto increment should match for column {expectedColumn.ColumnName}");
+                        Assert.That(expectedColumn.MaxLength, Is.EqualTo(actualColumn.MaxLength), $"Max Length should match for column {expectedColumn.ColumnName}");
+                        Assert.That(expectedColumn.Ordinal, Is.EqualTo(actualColumn.Ordinal)    , $"Ordinal Position should match for column {expectedColumn.ColumnName}");
 
                     }
                 });

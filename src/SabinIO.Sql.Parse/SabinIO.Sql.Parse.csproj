@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Authors>Simon Sabin</Authors>
     <Company>Sabin.IO</Company>
     <Description>Library for the processing of Parsing of SQL</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.7" />
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="150.4897.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.2.111" />
   </ItemGroup>
 
   <ItemGroup>

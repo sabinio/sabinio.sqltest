@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   <Authors>Simon Sabin</Authors>
@@ -9,12 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.0.78" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.7" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46041.41" />
-    <PackageReference Include="Microsoft.SqlServer.XEvent.XELite" Version="2021.1.14.8" />
-    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="171.30.0" />
+    <PackageReference Include="Microsoft.SqlServer.XEvent.XELite" Version="2024.2.5.1" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>

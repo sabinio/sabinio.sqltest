@@ -60,6 +60,8 @@ jobs:
         **\*Tests.dll
         !**\*TestAdapter.dll
         !**\obj\**
+      #filter to only category non Integration
+      testFiltercriteria: 'TestCategory!=Integration'
 
   - task: DotNetCoreCLI@2
     displayName: dotnet publish

@@ -22,6 +22,7 @@ namespace XEvent.App.Tests
         }
 
         [Test]
+        [Category("Integration")]
         public void TestAppExecutes()
         {
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -56,6 +57,8 @@ namespace XEvent.App.Tests
 
         }
         [Test]
+        [Category("Integration")]
+
         public async Task AppThrowsExceptionWhenTableDoesntExists()
         {
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
